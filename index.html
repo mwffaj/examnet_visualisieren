@@ -364,14 +364,23 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       sv += '<text x="' + gx + '" y="' + (H - 5) + '" text-anchor="middle" font-size="10" fill="#94a3b8">' + xv + "'</text>";
     }
 
-    // One polyline + dots per student
+    // One group per student: visible line, hit-target, dots, hidden name label
     data.forEach(function(r, i) {
       var c = C(i);
-      sv += '<polyline points="' + r.points.map(function(p) { return sx(p) + ',' + sy(p); }).join(' ') +
-        '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/>';
+      var last = r.points[r.points.length - 1];
+      var lx = sx(last), ly = sy(last);
+      var anchor = lx > W * 0.6 ? 'end' : 'start';
+      var tx = anchor === 'end' ? lx - 7 : lx + 7;
+      var pts = r.points.map(function(p) { return sx(p) + ',' + sy(p); }).join(' ');
+
+      sv += '<g id="svg-student-' + i + '" opacity="0.8" style="cursor:pointer">' +
+        '<polyline id="svg-line-' + i + '" points="' + pts + '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+        '<polyline points="' + pts + '" fill="none" stroke="transparent" stroke-width="12"/>';
       r.points.forEach(function(p) {
         sv += '<circle cx="' + sx(p) + '" cy="' + sy(p) + '" r="2.5" fill="#fff" stroke="' + c + '" stroke-width="1.5"/>';
       });
+      sv += '<text id="svg-label-' + i + '" x="' + tx + '" y="' + (ly - 9) + '" text-anchor="' + anchor + '" font-size="11" font-weight="600" fill="' + c + '" stroke="white" stroke-width="3" paint-order="stroke" display="none">' + r.name + '</text>';
+      sv += '</g>';
     });
 
     // Axes
@@ -381,13 +390,13 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     document.getElementById('viz-chart').innerHTML = sv;
 
-    // Student table
+    // Student table (with data-idx for click interaction)
     var html = '<div class="viz-row header"><span>Name</span><span>W\u00f6rter</span><span>Min.</span><span>\u00d8</span></div>';
     data.forEach(function(r, i) {
       var c = C(i);
       var last = r.points[r.points.length - 1];
       var avg = last.min > 0 ? (last.words / last.min).toFixed(1) : '\u2013';
-      html += '<div class="viz-row">' +
+      html += '<div class="viz-row" data-idx="' + i + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
         '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
         '<span style="font-weight:600">' + last.words + '</span>' +
         '<span style="color:#94a3b8">' + last.min + '</span>' +
@@ -395,6 +404,42 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         '</div>';
     });
     document.getElementById('viz-table').innerHTML = html;
+
+    // Highlight interaction
+    var chartEl = document.getElementById('viz-chart');
+    var tableEl = document.getElementById('viz-table');
+    var selected = -1;
+
+    function highlight(idx) {
+      // Reset all
+      data.forEach(function(r, i) {
+        document.getElementById('svg-student-' + i).setAttribute('opacity', '0.8');
+        document.getElementById('svg-line-' + i).setAttribute('stroke-width', '1.8');
+        document.getElementById('svg-label-' + i).setAttribute('display', 'none');
+        var row = tableEl.querySelector('[data-idx="' + i + '"]');
+        if (row) { row.style.background = ''; row.style.fontWeight = ''; }
+      });
+      if (selected === idx) { selected = -1; return; }
+      selected = idx;
+      // Dim others, highlight selected
+      data.forEach(function(r, i) {
+        if (i !== idx) document.getElementById('svg-student-' + i).setAttribute('opacity', '0.15');
+      });
+      document.getElementById('svg-student-' + idx).setAttribute('opacity', '1');
+      document.getElementById('svg-line-' + idx).setAttribute('stroke-width', '3');
+      document.getElementById('svg-label-' + idx).setAttribute('display', '');
+      var row = tableEl.querySelector('[data-idx="' + idx + '"]');
+      if (row) { row.style.background = '#eff6ff'; row.style.fontWeight = '600'; }
+    }
+
+    chartEl.addEventListener('click', function(e) {
+      var g = e.target.closest('[id^="svg-student-"]');
+      if (g) highlight(parseInt(g.id.replace('svg-student-', ''), 10));
+    });
+    tableEl.addEventListener('click', function(e) {
+      var row = e.target.closest('[data-idx]');
+      if (row) highlight(parseInt(row.getAttribute('data-idx'), 10));
+    });
 
     // CSV export
     document.getElementById('viz-csv').onclick = function() {
