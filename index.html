@@ -180,6 +180,15 @@
     </div>
   </div>
 
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-label">Daten zurücksetzen (auf exam.net ausführen):</div>
+      <a id="bm-clear" href="#" class="bm bm-slate">&#x1F5D1; Daten löschen</a>
+      <span class="drag-hint">← in die Lesezeichenleiste ziehen</span>
+    </div>
+  </div>
+
   <div class="note">
     &#x1F4BE; Die Daten werden lokal im Browser gespeichert (<code>localStorage</code>) und bleiben bis zum manuellen Löschen erhalten. Nichts wird an externe Server gesendet.
   </div>
@@ -204,7 +213,8 @@
     <div id="viz-title" class="card-title" style="margin-bottom:16px"></div>
     <div id="viz-chart"></div>
     <div id="viz-table"></div>
-    <div style="margin-top:14px;display:flex;justify-content:flex-end">
+    <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
+      <button id="viz-back" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px">← Zurück zur Anleitung</button>
       <button id="viz-csv" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">CSV exportieren</button>
     </div>
   </div>
@@ -306,6 +316,11 @@ toast.textContent='\u2713 \u00ab'+name+'\u00bb hinzugef\u00fcgt \u2014 '+stored.
 document.body.appendChild(toast);
 setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove();},400);},2800);
 })();
+</script>
+
+<!-- Clear: delete all class data from exam.net localStorage -->
+<script id="src-clear" type="text/plain">
+(function(){var d=localStorage.getItem('examnet_class');if(!d||d==='[]'){alert('Keine Daten vorhanden.');return;}if(!confirm('Alle gesammelten Schreibverl\u00e4ufe l\u00f6schen?'))return;localStorage.removeItem('examnet_class');var t=document.createElement('div');t.style.cssText='position:fixed;bottom:24px;right:24px;background:#dc2626;color:#fff;padding:12px 20px;border-radius:10px;font-family:system-ui,sans-serif;font-size:14px;font-weight:500;z-index:2147483647;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .4s';t.textContent='Alle Daten gel\u00f6scht';document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},400);},2500);})();
 </script>
 
 <!-- Class view: tiny bookmarklet — reads localStorage, opens hosted page with data in hash -->
@@ -441,6 +456,11 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       if (row) highlight(parseInt(row.getAttribute('data-idx'), 10));
     });
 
+    // Back button
+    document.getElementById('viz-back').onclick = function() {
+      location.href = location.pathname;
+    };
+
     // CSV export
     document.getElementById('viz-csv').onclick = function() {
       var rows = ['Name,Zeit,Min.,W\u00f6rter'];
@@ -460,6 +480,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     makeBM('src-single', 'bm-single');
     makeBM('src-collect', 'bm-collect');
     makeBM('src-class', 'bm-class');
+    makeBM('src-clear', 'bm-clear');
 
     var hash = location.hash.slice(1);
     if (hash) {
