@@ -449,7 +449,19 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     chartEl.addEventListener('click', function(e) {
       var g = e.target.closest('[id^="svg-student-"]');
-      if (g) highlight(parseInt(g.id.replace('svg-student-', ''), 10));
+      if (g) {
+        highlight(parseInt(g.id.replace('svg-student-', ''), 10));
+      } else {
+        // Click on background → reset all to normal
+        selected = -1;
+        data.forEach(function(r, i) {
+          document.getElementById('svg-student-' + i).setAttribute('opacity', '0.8');
+          document.getElementById('svg-line-' + i).setAttribute('stroke-width', '1.8');
+          document.getElementById('svg-label-' + i).setAttribute('display', 'none');
+          var row = tableEl.querySelector('[data-idx="' + i + '"]');
+          if (row) { row.style.background = ''; row.style.fontWeight = ''; }
+        });
+      }
     });
     tableEl.addEventListener('click', function(e) {
       var row = e.target.closest('[data-idx]');
