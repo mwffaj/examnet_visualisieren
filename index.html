@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>exam.net Schreibverlauf</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      gap: 16px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 36px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .step-num {
+      background: #2563eb;
+      color: white;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-body p {
+      font-size: 13px;
+      color: #475569;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+    .step-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    a.bm {
+      display: inline-block;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: grab;
+      user-select: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    a.bm:active { transform: scale(0.97); }
+    a.bm-blue { background: #2563eb; color: white; }
+    a.bm-blue:hover { background: #1d4ed8; }
+    a.bm-green { background: #16a34a; color: white; }
+    a.bm-green:hover { background: #15803d; }
+    a.bm-slate { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    a.bm-slate:hover { background: #e2e8f0; }
+    .drag-hint {
+      display: block;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 6px;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #f1f5f9;
+      margin: 24px 0;
+    }
+    .note {
+      background: #fefce8;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #92400e;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+    code {
+      background: #f1f5f9;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 12px;
+    }
+    h3 { font-size: 13px; color: #94a3b8; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 16px; }
+
+    /* Visualization page (shown when opened with hash data) */
+    #viz-section {
+      display: none;
+      width: 100%;
+      max-width: 700px;
+    }
+    #viz-section .card {
+      max-width: 100%;
+    }
+    .viz-row {
+      display: grid;
+      grid-template-columns: 1fr 52px 48px 42px;
+      padding: 5px 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .viz-row.header {
+      background: #f1f5f9;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      margin-top: 10px;
+    }
+    .viz-row + .viz-row:not(.header) {
+      border-top: 1px solid #f1f5f9;
+    }
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 7px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- CARD 1: Klassenauswertung -->
+<div class="card" id="card-class">
+  <div class="card-title">&#x1F4CA; Klassenauswertung</div>
+  <p class="card-sub">Schreibverläufe einer ganzen Klasse sammeln und gemeinsam visualisieren.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-label">Pro Schüler:in — Antwortverlauf öffnen, dann klicken:</div>
+      <a id="bm-collect" href="#" class="bm bm-green">&#x1F4E5; Schüler:in hinzufügen</a>
+      <span class="drag-hint">← in die Lesezeichenleiste ziehen</span>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-label">Nach allen Schüler:innen — Klasse anzeigen:</div>
+      <a id="bm-class" href="#" class="bm bm-blue">&#x1F4CA; Klassenauswertung</a>
+      <span class="drag-hint">← in die Lesezeichenleiste ziehen</span>
+    </div>
+  </div>
+
+  <div class="note">
+    &#x1F4BE; Die Daten werden lokal im Browser gespeichert (<code>localStorage</code>) und bleiben bis zum manuellen Löschen erhalten. Nichts wird an externe Server gesendet.
+  </div>
+</div>
+
+<!-- CARD 2: Einzelansicht -->
+<div class="card" id="card-single">
+  <h3>Einzelansicht</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-label">Antwortverlauf einer Schüler:in öffnen, dann klicken:</div>
+      <a id="bm-single" href="#" class="bm bm-slate">&#x1F4C8; Einzelansicht</a>
+      <span class="drag-hint">← in die Lesezeichenleiste ziehen</span>
+    </div>
+  </div>
+</div>
+
+<!-- Visualization section (shown when URL has hash data) -->
+<div id="viz-section">
+  <div class="card">
+    <div id="viz-title" class="card-title" style="margin-bottom:16px"></div>
+    <div id="viz-chart"></div>
+    <div id="viz-table"></div>
+    <div style="margin-top:14px;display:flex;justify-content:flex-end">
+      <button id="viz-csv" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">CSV exportieren</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================== BOOKMARKLET SOURCES ===================== -->
+
+<!-- Single student view -->
+<script id="src-single" type="text/plain">
+(function(){
+var containers=[].slice.call(document.querySelectorAll('.StudentHistoryPoint'));
+if(!containers.length){alert('Keine Schreibhistorie gefunden.\nBitte \u00abAntwortverlauf \u25b2\u00bb anklicken.');return;}
+var raw=[];
+containers.forEach(function(c){
+  var wEl=c.querySelector('[class*="word-count"]');if(!wEl)return;
+  var wm=wEl.textContent.match(/(\d+)/);if(!wm)return;
+  var words=parseInt(wm[1],10),time=null,els=c.querySelectorAll('*');
+  for(var i=0;i<els.length;i++){var t=els[i].textContent.trim();if(els[i].children.length===0&&/^\d{1,2}:\d{2}$/.test(t)){time=t;break;}}
+  if(time!==null&&!isNaN(words))raw.push({time:time,words:words});
+});
+if(!raw.length){alert('Daten konnten nicht gelesen werden.');return;}
+function toMin(t){var p=t.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);}
+var s0=toMin(raw[0].time);
+var pts=raw.map(function(d){return{label:d.time,min:toMin(d.time)-s0,words:d.words};});
+var old=document.getElementById('_enHist');if(old)old.remove();
+var ov=document.createElement('div');ov.id='_enHist';
+ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';
+var md=document.createElement('div');
+md.style.cssText='background:#fff;border-radius:16px;padding:24px;width:min(600px,92vw);max-height:90vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.25)';
+var hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:16px';
+var ttl=document.createElement('h2');ttl.textContent='Schreibverlauf';ttl.style.cssText='margin:0;font-size:18px;color:#0f172a;font-weight:700';
+var cls=document.createElement('button');cls.textContent='\u2715';cls.style.cssText='background:none;border:none;font-size:18px;cursor:pointer;color:#64748b;line-height:1;padding:4px';cls.onclick=function(){ov.remove();};
+hdr.append(ttl,cls);md.appendChild(hdr);
+var last=pts[pts.length-1];var dur=last.min;var avg=dur>0?(last.words/dur).toFixed(1):'\u2013';
+var sd=document.createElement('div');sd.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px';
+[['W\u00f6rter total',last.words],['Schreibzeit',dur+' Min.'],['\u00d8 W\u00f6rter/Min.',avg]].forEach(function(it){
+  var c=document.createElement('div');c.style.cssText='background:#f1f5f9;border-radius:10px;padding:12px 8px;text-align:center';
+  c.innerHTML='<div style="font-size:20px;font-weight:700;color:#2563eb">'+it[1]+'</div><div style="font-size:11px;color:#64748b;margin-top:2px">'+it[0]+'</div>';
+  sd.appendChild(c);
+});
+md.appendChild(sd);
+var CW=552,CH=240,DPR=window.devicePixelRatio||1;
+var cvs=document.createElement('canvas');cvs.width=CW*DPR;cvs.height=CH*DPR;cvs.style.cssText='width:100%;height:auto;border-radius:8px;display:block';md.appendChild(cvs);
+var ctx=cvs.getContext('2d');ctx.scale(DPR,DPR);
+var pad={t:28,r:16,b:42,l:50};var cw=CW-pad.l-pad.r,ch=CH-pad.t-pad.b;
+var maxW=Math.ceil(Math.max.apply(null,pts.map(function(p){return p.words;}))/50)*50;var maxM=Math.max.apply(null,pts.map(function(p){return p.min;}))||1;
+function xs(p){return pad.l+(p.min/maxM)*cw;}function ys(p){return pad.t+ch-(p.words/maxW)*ch;}
+ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,CW,CH);
+for(var i=0;i<=5;i++){var gy=pad.t+(i/5)*ch;ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cw,gy);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#94a3b8';ctx.font='11px system-ui,sans-serif';ctx.textAlign='right';ctx.fillText(Math.round(maxW*(5-i)/5),pad.l-6,gy+4);}
+ctx.save();ctx.translate(13,pad.t+ch/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='#94a3b8';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('W\u00f6rter',0,0);ctx.restore();
+ctx.fillStyle='rgba(37,99,235,.07)';ctx.beginPath();ctx.moveTo(xs(pts[0]),pad.t+ch);pts.forEach(function(p){ctx.lineTo(xs(p),ys(p));});ctx.lineTo(xs(pts[pts.length-1]),pad.t+ch);ctx.closePath();ctx.fill();
+ctx.strokeStyle='#2563eb';ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach(function(p,i){i===0?ctx.moveTo(xs(p),ys(p)):ctx.lineTo(xs(p),ys(p));});ctx.stroke();
+pts.forEach(function(p){var x=xs(p),y=ys(p);ctx.fillStyle='#1d4ed8';ctx.font='bold 10px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(p.words,x,y-10);ctx.fillStyle='#fff';ctx.strokeStyle='#2563eb';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#64748b';ctx.font='10px system-ui,sans-serif';ctx.fillText(p.label,x,CH-6);});
+ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+ch);ctx.lineTo(pad.l+cw,pad.t+ch);ctx.stroke();
+var tbl=document.createElement('table');tbl.style.cssText='width:100%;border-collapse:collapse;margin-top:14px;font-size:13px';
+var th='<thead><tr style="background:#f1f5f9">';['Zeit','Min. seit Start','W\u00f6rter','+/\u2212 W\u00f6rter'].forEach(function(h,i){th+='<th style="padding:7px 10px;text-align:left;color:#475569;font-weight:600'+(i===0?';border-radius:8px 0 0 8px':i===3?';border-radius:0 8px 8px 0':'')+'">' +h+'</th>';});th+='</tr></thead>';
+var tb='<tbody>';pts.forEach(function(p,i){var diff=i===0?'\u2013':(p.words-pts[i-1].words>=0?'+':'')+(p.words-pts[i-1].words);var col=diff==='\u2013'?'#94a3b8':diff.charAt(0)==='+' ?'#16a34a':'#dc2626';tb+='<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px 10px;color:#1e293b">'+p.label+'</td><td style="padding:7px 10px;color:#64748b">'+p.min+' Min.</td><td style="padding:7px 10px;font-weight:600;color:#0f172a">'+p.words+'</td><td style="padding:7px 10px;color:'+col+'">'+diff+'</td></tr>';});tb+='</tbody>';
+tbl.innerHTML=th+tb;md.appendChild(tbl);
+var foot=document.createElement('div');foot.style.cssText='margin-top:14px;display:flex;justify-content:flex-end';
+var csvBtn=document.createElement('button');csvBtn.textContent='CSV exportieren';csvBtn.style.cssText='padding:9px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500';
+csvBtn.onclick=function(){var rows=['Zeit,Minuten seit Start,W\u00f6rter,W\u00f6rter +/-'];pts.forEach(function(p,i){rows.push(p.label+','+p.min+','+p.words+','+(i===0?'':p.words-pts[i-1].words));});var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,%EF%BB%BF'+encodeURIComponent(rows.join('\n'));a.download='schreibverlauf.csv';a.click();};
+foot.appendChild(csvBtn);md.appendChild(foot);
+ov.appendChild(md);ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});document.body.appendChild(ov);
+})();
+</script>
+
+<!-- Collect: add one student to class dataset -->
+<script id="src-collect" type="text/plain">
+(function(){
+var containers=[].slice.call(document.querySelectorAll('.StudentHistoryPoint'));
+if(!containers.length){alert('Keine Schreibhistorie gefunden.\nBitte \u00abAntwortverlauf \u25b2\u00bb anklicken.');return;}
+var raw=[];
+containers.forEach(function(c){
+  var wEl=c.querySelector('[class*="word-count"]');if(!wEl)return;
+  var wm=wEl.textContent.match(/(\d+)/);if(!wm)return;
+  var words=parseInt(wm[1],10),time=null,els=c.querySelectorAll('*');
+  for(var i=0;i<els.length;i++){var t=els[i].textContent.trim();if(els[i].children.length===0&&/^\d{1,2}:\d{2}$/.test(t)){time=t;break;}}
+  if(time!==null&&!isNaN(words))raw.push({time:time,words:words});
+});
+if(!raw.length){alert('Daten konnten nicht gelesen werden.');return;}
+var guessedName='';
+var hdrEl=document.querySelector('[class*="StudentOverviewStudentInfo__header"]');
+if(hdrEl){guessedName=hdrEl.textContent.replace(/\S+@\S+\.\S+/g,'').replace(/\s+/g,' ').trim();}
+if(!guessedName){var title=document.title.replace(/exam\.net/i,'').replace(/[-|–—]/g,'').trim();if(title&&title.length<60)guessedName=title;}
+var name=prompt('Name:',guessedName);
+if(name===null)return;
+name=name.trim()||('S '+new Date().toLocaleTimeString('de-CH'));
+function toMin(t){var p=t.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);}
+var s0=toMin(raw[0].time);
+var pts=raw.map(function(d){return{label:d.time,min:toMin(d.time)-s0,words:d.words};});
+var stored=JSON.parse(localStorage.getItem('examnet_class')||'[]');
+stored=stored.filter(function(s){return s.name!==name;});
+stored.push({name:name,points:pts});
+localStorage.setItem('examnet_class',JSON.stringify(stored));
+var toast=document.createElement('div');
+toast.style.cssText='position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:12px 20px;border-radius:10px;font-family:system-ui,sans-serif;font-size:14px;font-weight:500;z-index:2147483647;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .4s';
+toast.textContent='\u2713 \u00ab'+name+'\u00bb hinzugef\u00fcgt \u2014 '+stored.length+' Sch\u00fcler:innen total';
+document.body.appendChild(toast);
+setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove();},400);},2800);
+})();
+</script>
+
+<!-- Class view: tiny bookmarklet — reads localStorage, opens hosted page with data in hash -->
+<script id="src-class" type="text/plain">
+(function(){var d=localStorage.getItem('examnet_class');if(!d||d==='[]'){alert('Noch keine Daten. Zuerst \u00abHinzuf\u00fcgen\u00bb klicken.');return;}window.open('https://mwffaj.github.io/examnet_visualisieren/#'+encodeURIComponent(d),'_blank');})();
+</script>
+
+<script>
+  function makeBM(id, linkId) {
+    var src = document.getElementById(id).textContent.trim().replace(/\s+/g, ' ');
+    document.getElementById(linkId).href = 'javascript:' + src;
+  }
+
+  // Render class visualization from data array
+  function renderClassView(data) {
+    document.getElementById('card-class').style.display = 'none';
+    document.getElementById('card-single').style.display = 'none';
+    document.getElementById('viz-section').style.display = 'block';
+    document.body.style.justifyContent = 'flex-start';
+
+    document.getElementById('viz-title').textContent =
+      'Klassenauswertung \u2014 ' + data.length + ' Sch\u00fcler:innen';
+
+    function C(i) { return 'hsl(' + (((i * 137.5) % 360) | 0) + ',65%,45%)'; }
+
+    var mW = 0, mM = 0;
+    data.forEach(function(s) {
+      s.points.forEach(function(p) {
+        if (p.words > mW) mW = p.words;
+        if (p.min > mM) mM = p.min;
+      });
+    });
+    mW = Math.ceil(mW / 50) * 50 || 50;
+    mM = mM || 1;
+
+    var W = 620, H = 220, pl = 38, pt = 14, pr = 10, pb = 26;
+    var cw = W - pl - pr, ch = H - pt - pb;
+    function sx(p) { return pl + (p.min / mM) * cw; }
+    function sy(p) { return pt + ch - (p.words / mW) * ch; }
+
+    var sv = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;border-radius:8px" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="' + W + '" height="' + H + '" fill="#f8fafc" rx="8"/>';
+
+    // Y grid lines + labels
+    for (var i = 0; i <= 4; i++) {
+      var gy = pt + (i / 4) * ch;
+      sv += '<line x1="' + pl + '" y1="' + gy + '" x2="' + (pl + cw) + '" y2="' + gy + '" stroke="#e2e8f0" stroke-dasharray="2,4"/>' +
+        '<text x="' + (pl - 4) + '" y="' + (gy + 3.5) + '" text-anchor="end" font-size="10" fill="#94a3b8">' + Math.round(mW * (4 - i) / 4) + '</text>';
+    }
+
+    // X labels (minutes)
+    var xSteps = Math.min(mM, 6);
+    for (var j = 0; j <= xSteps; j++) {
+      var xv = Math.round(mM * j / xSteps);
+      var gx = pl + (xv / mM) * cw;
+      sv += '<text x="' + gx + '" y="' + (H - 5) + '" text-anchor="middle" font-size="10" fill="#94a3b8">' + xv + "'</text>";
+    }
+
+    // One polyline + dots per student
+    data.forEach(function(r, i) {
+      var c = C(i);
+      sv += '<polyline points="' + r.points.map(function(p) { return sx(p) + ',' + sy(p); }).join(' ') +
+        '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round" opacity=".8"/>';
+      r.points.forEach(function(p) {
+        sv += '<circle cx="' + sx(p) + '" cy="' + sy(p) + '" r="2.5" fill="#fff" stroke="' + c + '" stroke-width="1.5"/>';
+      });
+    });
+
+    // Axes
+    sv += '<line x1="' + pl + '" y1="' + pt + '" x2="' + pl + '" y2="' + (pt + ch) + '" stroke="#cbd5e1" stroke-width="1.5"/>' +
+      '<line x1="' + pl + '" y1="' + (pt + ch) + '" x2="' + (pl + cw) + '" y2="' + (pt + ch) + '" stroke="#cbd5e1" stroke-width="1.5"/>' +
+      '</svg>';
+
+    document.getElementById('viz-chart').innerHTML = sv;
+
+    // Student table
+    var html = '<div class="viz-row header"><span>Name</span><span>W\u00f6rter</span><span>Min.</span><span>\u00d8</span></div>';
+    data.forEach(function(r, i) {
+      var c = C(i);
+      var last = r.points[r.points.length - 1];
+      var avg = last.min > 0 ? (last.words / last.min).toFixed(1) : '\u2013';
+      html += '<div class="viz-row">' +
+        '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
+        '<span style="font-weight:600">' + last.words + '</span>' +
+        '<span style="color:#94a3b8">' + last.min + '</span>' +
+        '<span style="color:#94a3b8">' + avg + '</span>' +
+        '</div>';
+    });
+    document.getElementById('viz-table').innerHTML = html;
+
+    // CSV export
+    document.getElementById('viz-csv').onclick = function() {
+      var rows = ['Name,Zeit,Min.,W\u00f6rter'];
+      data.forEach(function(r) {
+        r.points.forEach(function(p) {
+          rows.push('"' + r.name.replace(/"/g, '""') + '",' + p.label + ',' + p.min + ',' + p.words);
+        });
+      });
+      var a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(rows.join('\n'));
+      a.download = 'klasse.csv';
+      a.click();
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    makeBM('src-single', 'bm-single');
+    makeBM('src-collect', 'bm-collect');
+    makeBM('src-class', 'bm-class');
+
+    var hash = location.hash.slice(1);
+    if (hash) {
+      try {
+        var data = JSON.parse(decodeURIComponent(hash));
+        if (Array.isArray(data) && data.length) {
+          renderClassView(data);
+        }
+      } catch (e) {
+        // Invalid hash — show normal instruction page
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
