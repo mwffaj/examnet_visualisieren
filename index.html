@@ -439,6 +439,10 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     });
     document.getElementById('viz-table').innerHTML = html;
 
+    var chartEl = document.getElementById('viz-chart');
+    var tableEl = document.getElementById('viz-table');
+    var selected = -1;
+
     // Checkbox logic
     function updateMasterChk() {
       var chks = tableEl.querySelectorAll('.viz-chk');
@@ -476,10 +480,6 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     });
 
     // Highlight interaction
-    var chartEl = document.getElementById('viz-chart');
-    var tableEl = document.getElementById('viz-table');
-    var selected = -1;
-
     function highlight(idx) {
       // Reset all
       data.forEach(function(r, i) {
