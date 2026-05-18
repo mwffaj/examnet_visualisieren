@@ -128,7 +128,7 @@
     }
     .viz-row {
       display: grid;
-      grid-template-columns: 1fr 52px 48px 42px;
+      grid-template-columns: 20px 1fr 52px 48px 42px;
       padding: 5px 8px;
       align-items: center;
       font-size: 13px;
@@ -423,13 +423,14 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     document.getElementById('viz-chart').innerHTML = sv;
 
-    // Student table (with data-idx for click interaction)
-    var html = '<div class="viz-row header"><span>Name</span><span>W\u00f6rter</span><span>Min.</span><span>\u00d8</span></div>';
+    // Student table (with checkboxes + data-idx for click interaction)
+    var html = '<div class="viz-row header"><span><input type="checkbox" id="viz-chk-all" checked title="Alle an/ab" style="cursor:pointer;margin:0"></span><span>Name</span><span>W\u00f6rter</span><span>Min.</span><span>\u00d8</span></div>';
     data.forEach(function(r, i) {
       var c = C(i);
       var last = r.points[r.points.length - 1];
       var avg = last.min > 0 ? (last.words / last.min).toFixed(1) : '\u2013';
       html += '<div class="viz-row" data-idx="' + i + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
+        '<span><input type="checkbox" class="viz-chk" data-idx="' + i + '" checked style="cursor:pointer;margin:0"></span>' +
         '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
         '<span style="font-weight:600">' + last.words + '</span>' +
         '<span style="color:#94a3b8">' + last.min + '</span>' +
@@ -437,6 +438,42 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         '</div>';
     });
     document.getElementById('viz-table').innerHTML = html;
+
+    // Checkbox logic
+    function updateMasterChk() {
+      var chks = tableEl.querySelectorAll('.viz-chk');
+      var total = chks.length, on = 0;
+      chks.forEach(function(c) { if (c.checked) on++; });
+      var m = tableEl.querySelector('#viz-chk-all');
+      m.checked = on === total;
+      m.indeterminate = on > 0 && on < total;
+    }
+
+    tableEl.addEventListener('change', function(e) {
+      if (e.target.classList.contains('viz-chk')) {
+        var idx = parseInt(e.target.getAttribute('data-idx'), 10);
+        var grp = document.getElementById('svg-student-' + idx);
+        if (grp) {
+          if (e.target.checked) {
+            grp.setAttribute('display', '');
+            grp.setAttribute('opacity', '0.8');
+          } else {
+            grp.setAttribute('display', 'none');
+            if (selected === idx) resetAll();
+          }
+        }
+        updateMasterChk();
+      } else if (e.target.id === 'viz-chk-all') {
+        var on = e.target.checked;
+        tableEl.querySelectorAll('.viz-chk').forEach(function(chk) {
+          chk.checked = on;
+          var idx = parseInt(chk.getAttribute('data-idx'), 10);
+          var grp = document.getElementById('svg-student-' + idx);
+          if (grp) grp.setAttribute('display', on ? '' : 'none');
+        });
+        if (!on) resetAll();
+      }
+    });
 
     // Highlight interaction
     var chartEl = document.getElementById('viz-chart');
@@ -494,6 +531,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       }
     });
     tableEl.addEventListener('click', function(e) {
+      if (e.target.type === 'checkbox') return;
       var el = e.target;
       while (el && el !== tableEl) {
         if (el.getAttribute && el.getAttribute('data-idx') !== null) {
