@@ -210,7 +210,13 @@
 <!-- Visualization section (shown when URL has hash data) -->
 <div id="viz-section">
   <div class="card">
-    <div id="viz-title" class="card-title" style="margin-bottom:16px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div id="viz-title" class="card-title"></div>
+      <div style="display:flex;gap:6px">
+        <button id="viz-dots" style="padding:5px 10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px">● Zeitpunkte</button>
+        <button id="viz-fs" style="padding:5px 10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px">⛶ Vollbild</button>
+      </div>
+    </div>
     <div id="viz-chart"></div>
     <div id="viz-table"></div>
     <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
@@ -486,6 +492,39 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         el = el.parentNode;
       }
     });
+
+    // Dots toggle
+    var dotsOn = true;
+    document.getElementById('viz-dots').onclick = function() {
+      dotsOn = !dotsOn;
+      var circles = chartEl.querySelectorAll('circle');
+      for (var k = 0; k < circles.length; k++) {
+        circles[k].setAttribute('display', dotsOn ? '' : 'none');
+      }
+      this.style.background = dotsOn ? '#f1f5f9' : '#e2e8f0';
+      this.style.color = dotsOn ? '#475569' : '#1e293b';
+    };
+
+    // Fullscreen modal
+    document.getElementById('viz-fs').onclick = function() {
+      var svg = chartEl.querySelector('svg');
+      if (!svg) return;
+      var modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:16px;padding:24px 24px 16px;width:min(96vw,1300px);position:relative';
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = '×';
+      closeBtn.style.cssText = 'position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:#64748b;line-height:1';
+      closeBtn.onclick = function() { modal.remove(); };
+      var svgClone = svg.cloneNode(true);
+      svgClone.style.cssText = 'display:block;width:100%;height:auto;border-radius:8px';
+      box.appendChild(closeBtn);
+      box.appendChild(svgClone);
+      modal.appendChild(box);
+      modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+      document.body.appendChild(modal);
+    };
 
     // Back button
     document.getElementById('viz-back').onclick = function() {
