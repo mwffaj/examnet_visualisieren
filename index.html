@@ -213,8 +213,9 @@
     <div id="viz-title" class="card-title" style="margin-bottom:16px"></div>
     <div id="viz-chart"></div>
     <div id="viz-table"></div>
-    <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
-      <button id="viz-back" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px">← Zurück zur Anleitung</button>
+    <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <button id="viz-back" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px">← Zurück</button>
+      <button id="viz-delete" style="padding:8px 14px;background:#fff;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;cursor:pointer;font-size:13px">Alle löschen</button>
       <button id="viz-csv" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">CSV exportieren</button>
     </div>
   </div>
@@ -390,7 +391,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
       sv += '<g id="svg-student-' + i + '" opacity="0.8" style="cursor:pointer">' +
         '<polyline id="svg-line-' + i + '" points="' + pts + '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round"/>' +
-        '<polyline points="' + pts + '" fill="none" stroke="transparent" stroke-width="12"/>';
+        '<polyline points="' + pts + '" fill="none" stroke="transparent" stroke-width="12" pointer-events="stroke"/>';
       r.points.forEach(function(p) {
         sv += '<circle cx="' + sx(p) + '" cy="' + sy(p) + '" r="2.5" fill="#fff" stroke="' + c + '" stroke-width="1.5"/>';
       });
@@ -447,30 +448,55 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       if (row) { row.style.background = '#eff6ff'; row.style.fontWeight = '600'; }
     }
 
+    function resetAll() {
+      selected = -1;
+      data.forEach(function(r, i) {
+        document.getElementById('svg-student-' + i).setAttribute('opacity', '0.8');
+        document.getElementById('svg-line-' + i).setAttribute('stroke-width', '1.8');
+        document.getElementById('svg-label-' + i).setAttribute('display', 'none');
+        var row = tableEl.querySelector('[data-idx="' + i + '"]');
+        if (row) { row.style.background = ''; row.style.fontWeight = ''; }
+      });
+    }
+
+    // Manual parent traversal (more reliable than closest() for SVG in Safari)
+    function findStudentGroup(el) {
+      while (el && el !== chartEl) {
+        if (el.id && el.id.indexOf('svg-student-') === 0) return el;
+        el = el.parentNode;
+      }
+      return null;
+    }
+
     chartEl.addEventListener('click', function(e) {
-      var g = e.target.closest('[id^="svg-student-"]');
+      var g = findStudentGroup(e.target);
       if (g) {
         highlight(parseInt(g.id.replace('svg-student-', ''), 10));
       } else {
-        // Click on background → reset all to normal
-        selected = -1;
-        data.forEach(function(r, i) {
-          document.getElementById('svg-student-' + i).setAttribute('opacity', '0.8');
-          document.getElementById('svg-line-' + i).setAttribute('stroke-width', '1.8');
-          document.getElementById('svg-label-' + i).setAttribute('display', 'none');
-          var row = tableEl.querySelector('[data-idx="' + i + '"]');
-          if (row) { row.style.background = ''; row.style.fontWeight = ''; }
-        });
+        resetAll();
       }
     });
     tableEl.addEventListener('click', function(e) {
-      var row = e.target.closest('[data-idx]');
-      if (row) highlight(parseInt(row.getAttribute('data-idx'), 10));
+      var el = e.target;
+      while (el && el !== tableEl) {
+        if (el.getAttribute && el.getAttribute('data-idx') !== null) {
+          highlight(parseInt(el.getAttribute('data-idx'), 10));
+          return;
+        }
+        el = el.parentNode;
+      }
     });
 
     // Back button
     document.getElementById('viz-back').onclick = function() {
       location.href = location.pathname;
+    };
+
+    // Delete button
+    document.getElementById('viz-delete').onclick = function() {
+      if (confirm('Aktuelle Auswertung schliessen?')) {
+        location.href = location.pathname;
+      }
     };
 
     // CSV export
