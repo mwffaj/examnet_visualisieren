@@ -583,7 +583,7 @@ var stopped=false;
 var btnStop=mkBtn('Abbrechen','#f1f5f9','#64748b','1px solid #e2e8f0');
 btnStop.onclick=function(){stopped=true;c.ov.remove();};
 c.box.appendChild(btnStop);
-var cur=0,coll=0;
+var cur=0,coll=0,curRetries=0;
 function next(){
 if(stopped)return;
 if(cur>=sel.length){
@@ -609,7 +609,7 @@ statEl.textContent='Lade Verlauf\u2026';
 sbStore.fetchBackups(s.id).then(function(){
 if(stopped)return;
 var bk=pinia.state.value.studentBackups.backups;
-if(!bk||!bk.length){statEl.textContent='0 Backups';cur++;setTimeout(next,200);return;}
+if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Warte\u2026';setTimeout(next,1500);return;}statEl.textContent='0 Backups';curRetries=0;cur++;setTimeout(next,500);return;}
 var examDay=s.created_at&&s.created_at.slice(0,10);
 var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
 if(filtered.length)bk=filtered;
@@ -620,12 +620,12 @@ var storedArr=JSON.parse(localStorage.getItem('examnet_class')||'[]');
 storedArr=storedArr.filter(function(x){return x.name!==nm;});
 storedArr.push({name:nm,points:pts});
 localStorage.setItem('examnet_class',JSON.stringify(storedArr));
-coll++;
+curRetries=0;coll++;
 statEl.textContent='\u2713 '+pts.length+' Punkte';
-cur++;setTimeout(next,300);
+cur++;setTimeout(next,600);
 }).catch(function(e){
 statEl.textContent='Fehler: '+(e&&e.message||'?');
-cur++;setTimeout(next,300);
+curRetries=0;cur++;setTimeout(next,600);
 });
 }
 next();
@@ -718,7 +718,7 @@ var stopped=false;
 var btnStop=mkBtn('Cancel','#f1f5f9','#64748b','1px solid #e2e8f0');
 btnStop.onclick=function(){stopped=true;c.ov.remove();};
 c.box.appendChild(btnStop);
-var cur=0,coll=0;
+var cur=0,coll=0,curRetries=0;
 function next(){
 if(stopped)return;
 if(cur>=sel.length){
@@ -744,7 +744,7 @@ statEl.textContent='Loading history\u2026';
 sbStore.fetchBackups(s.id).then(function(){
 if(stopped)return;
 var bk=pinia.state.value.studentBackups.backups;
-if(!bk||!bk.length){statEl.textContent='0 backups';cur++;setTimeout(next,200);return;}
+if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Waiting\u2026';setTimeout(next,1500);return;}statEl.textContent='0 backups';curRetries=0;cur++;setTimeout(next,500);return;}
 var examDay=s.created_at&&s.created_at.slice(0,10);
 var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
 if(filtered.length)bk=filtered;
@@ -755,12 +755,12 @@ var storedArr=JSON.parse(localStorage.getItem('examnet_class')||'[]');
 storedArr=storedArr.filter(function(x){return x.name!==nm;});
 storedArr.push({name:nm,points:pts});
 localStorage.setItem('examnet_class',JSON.stringify(storedArr));
-coll++;
+curRetries=0;coll++;
 statEl.textContent='\u2713 '+pts.length+' points';
-cur++;setTimeout(next,300);
+cur++;setTimeout(next,600);
 }).catch(function(e){
 statEl.textContent='Error: '+(e&&e.message||'?');
-cur++;setTimeout(next,300);
+curRetries=0;cur++;setTimeout(next,600);
 });
 }
 next();
