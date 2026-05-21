@@ -570,7 +570,6 @@ rowB.append(btnGo,btnCancelB);
 b.box.appendChild(rowB);
 }
 function levelC(sel){
-if(sbStore.resetState)sbStore.resetState();
 var c=mkOv();
 c.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:10px','Schreibverl\u00e4ufe werden gesammelt\u2026'));
 var nameEl=mkEl('div','font-size:13px;color:#0f172a;min-height:18px','');
@@ -608,7 +607,7 @@ pgBar.style.width=Math.round(cur/sel.length*100)+'%';
 statEl.textContent='Lade Verlauf\u2026';
 sbStore.fetchBackups(s.id).then(function(){
 if(stopped)return;
-var bk=pinia.state.value.studentBackups.backups;
+var bk=sbStore.backups||pinia.state.value.studentBackups.backups;
 if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Warte\u2026';setTimeout(next,1500);return;}statEl.textContent='0 Backups';curRetries=0;cur++;setTimeout(next,500);return;}
 var examDay=s.created_at&&s.created_at.slice(0,10);
 var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
@@ -705,7 +704,6 @@ rowB.append(btnGo,btnCancelB);
 b.box.appendChild(rowB);
 }
 function levelC(sel){
-if(sbStore.resetState)sbStore.resetState();
 var c=mkOv();
 c.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:10px','Collecting writing histories\u2026'));
 var nameEl=mkEl('div','font-size:13px;color:#0f172a;min-height:18px','');
@@ -743,7 +741,7 @@ pgBar.style.width=Math.round(cur/sel.length*100)+'%';
 statEl.textContent='Loading history\u2026';
 sbStore.fetchBackups(s.id).then(function(){
 if(stopped)return;
-var bk=pinia.state.value.studentBackups.backups;
+var bk=sbStore.backups||pinia.state.value.studentBackups.backups;
 if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Waiting\u2026';setTimeout(next,1500);return;}statEl.textContent='0 backups';curRetries=0;cur++;setTimeout(next,500);return;}
 var examDay=s.created_at&&s.created_at.slice(0,10);
 var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
