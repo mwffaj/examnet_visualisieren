@@ -227,7 +227,6 @@
     <div id="viz-table"></div>
     <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center">
       <button id="viz-back" data-i18n="viz-back" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px">&#8592; Zur&#252;ck</button>
-      <button id="viz-delete" data-i18n="viz-delete" style="padding:8px 14px;background:#fff;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;cursor:pointer;font-size:13px">Alle l&#246;schen</button>
       <button id="viz-csv" data-i18n="viz-csv" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">CSV exportieren</button>
       <button id="viz-save" data-i18n="viz-save" style="padding:8px 16px;background:#0f172a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">Als HTML speichern</button>
     </div>
@@ -796,12 +795,6 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       location.href = location.pathname;
     };
 
-    // Delete button
-    document.getElementById('viz-delete').onclick = function() {
-      if (confirm(T[LANG]['confirm-delete'])) {
-        location.href = location.pathname;
-      }
-    };
 
     // CSV export
     document.getElementById('viz-csv').onclick = function() {
@@ -836,7 +829,6 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         '<div id="viz-table"></div>' +
         '<div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center">' +
         '<button id="viz-back" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px">' + T[lang]['viz-back'] + '</button>' +
-        '<button id="viz-delete" style="padding:8px 14px;background:#fff;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;cursor:pointer;font-size:13px">' + T[lang]['viz-delete'] + '</button>' +
         '<button id="viz-csv" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">' + T[lang]['viz-csv'] + '</button>' +
         '<button id="viz-save" style="padding:8px 16px;background:#0f172a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">' + T[lang]['viz-save'] + '</button>' +
         '</div></div></div>';
