@@ -525,12 +525,14 @@ a.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margi
 a.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',existData.length+' Sch\u00fcler:innen bereits gespeichert.'));
 var rowA=mkEl('div','display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end');
 var btnShow=mkBtn('\uD83D\uDCCA Anzeigen','#2563eb');
+var btnAdd=mkBtn('Erg\u00e4nzen','#f1f5f9','#0f172a','1px solid #e2e8f0');
 var btnNew=mkBtn('L\u00f6schen \u0026 neu sammeln','#f1f5f9','#dc2626','1px solid #fecaca');
 var btnCancelA=mkBtn('Abbrechen','#f1f5f9','#64748b','1px solid #e2e8f0');
 btnShow.onclick=function(){a.ov.remove();openViz(existData);};
+btnAdd.onclick=function(){a.ov.remove();levelB();};
 btnNew.onclick=function(){a.ov.remove();localStorage.removeItem('examnet_class');levelB();};
 btnCancelA.onclick=function(){a.ov.remove();};
-rowA.append(btnShow,btnNew,btnCancelA);
+rowA.append(btnShow,btnAdd,btnNew,btnCancelA);
 a.box.appendChild(rowA);
 }else{
 levelB();
@@ -655,12 +657,14 @@ a.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margi
 a.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',existData.length+' students already saved.'));
 var rowA=mkEl('div','display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end');
 var btnShow=mkBtn('\uD83D\uDCCA Show','#2563eb');
+var btnAdd=mkBtn('Add more','#f1f5f9','#0f172a','1px solid #e2e8f0');
 var btnNew=mkBtn('Delete \u0026 re-collect','#f1f5f9','#dc2626','1px solid #fecaca');
 var btnCancelA=mkBtn('Cancel','#f1f5f9','#64748b','1px solid #e2e8f0');
 btnShow.onclick=function(){a.ov.remove();openViz(existData);};
+btnAdd.onclick=function(){a.ov.remove();levelB();};
 btnNew.onclick=function(){a.ov.remove();localStorage.removeItem('examnet_class');levelB();};
 btnCancelA.onclick=function(){a.ov.remove();};
-rowA.append(btnShow,btnNew,btnCancelA);
+rowA.append(btnShow,btnAdd,btnNew,btnCancelA);
 a.box.appendChild(rowA);
 }else{
 levelB();
