@@ -570,6 +570,7 @@ rowB.append(btnGo,btnCancelB);
 b.box.appendChild(rowB);
 }
 function levelC(sel){
+if(sbStore.resetState)sbStore.resetState();
 var c=mkOv();
 c.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:10px','Schreibverl\u00e4ufe werden gesammelt\u2026'));
 var nameEl=mkEl('div','font-size:13px;color:#0f172a;min-height:18px','');
@@ -591,7 +592,7 @@ var finalData=JSON.parse(localStorage.getItem('examnet_class')||'[]');
 if(finalData.length){
 var d=mkOv();
 d.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#16a34a;margin-bottom:6px','\u2713 Fertig'));
-d.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',coll+' Sch\u00fcler:innen gesammelt.'));
+d.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',coll>0?coll+' neu gesammelt, '+finalData.length+' total.':finalData.length+' gespeicherte Eintr\u00e4ge.'));
 var btnViz=mkBtn('\uD83D\uDCCA Visualisierung \u00f6ffnen','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
 d.box.appendChild(btnViz);
@@ -704,6 +705,7 @@ rowB.append(btnGo,btnCancelB);
 b.box.appendChild(rowB);
 }
 function levelC(sel){
+if(sbStore.resetState)sbStore.resetState();
 var c=mkOv();
 c.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:10px','Collecting writing histories\u2026'));
 var nameEl=mkEl('div','font-size:13px;color:#0f172a;min-height:18px','');
@@ -725,7 +727,7 @@ var finalData=JSON.parse(localStorage.getItem('examnet_class')||'[]');
 if(finalData.length){
 var d=mkOv();
 d.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#16a34a;margin-bottom:6px','\u2713 Done'));
-d.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',coll+' students collected.'));
+d.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',coll>0?coll+' newly collected, '+finalData.length+' total.':finalData.length+' saved entries.'));
 var btnViz=mkBtn('\uD83D\uDCCA Open visualization','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
 d.box.appendChild(btnViz);
