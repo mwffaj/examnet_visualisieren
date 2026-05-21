@@ -517,7 +517,7 @@ function mkOv(){var ov=document.createElement('div');ov.style.cssText='position:
 function mkEl(tag,css,txt){var e=document.createElement(tag);if(css)e.style.cssText=css;if(txt!==undefined)e.textContent=txt;return e;}
 function mkBtn(txt,bg,col,brd){return mkEl('button','padding:9px 16px;background:'+bg+';color:'+(col||'#fff')+';border:'+(brd||'none')+';border-radius:8px;cursor:pointer;font-size:13px;font-weight:600',txt);}
 var existRaw=localStorage.getItem('examnet_class');
-var existData=existRaw?JSON.parse(existRaw):[];
+var existData=[];try{existData=existRaw?JSON.parse(existRaw):[];}catch(e){localStorage.removeItem('examnet_class');}
 if(existData.length){
 var a=mkOv();
 a.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:6px','Gespeicherte Daten'));
@@ -605,10 +605,14 @@ var nm=sName(s);
 nameEl.textContent=(cur+1)+' / '+sel.length+': '+nm;
 pgBar.style.width=Math.round(cur/sel.length*100)+'%';
 statEl.textContent='Lade Verlauf\u2026';
-sbStore.fetchBackups(s.id).then(function(){
+var _fp;try{_fp=sbStore.fetchBackups(s.id);}catch(e){statEl.textContent='Fehler: '+(e&&e.message||'?');curRetries=0;cur++;setTimeout(next,600);return;}
+var _tp=new Promise(function(r,j){setTimeout(function(){j(new Error('timeout'));},10000);});
+Promise.race([_fp,_tp]).then(function(){
+if(stopped)return;
+setTimeout(function(){
 if(stopped)return;
 var bk=sbStore.backups||pinia.state.value.studentBackups.backups;
-if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Warte\u2026';setTimeout(next,1500);return;}statEl.textContent='0 Backups';curRetries=0;cur++;setTimeout(next,500);return;}
+if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Warte\u2026';setTimeout(next,1500);return;}statEl.textContent='0 Backups';curRetries=0;cur++;setTimeout(next,600);return;}
 var examDay=s.created_at&&s.created_at.slice(0,10);
 var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
 if(filtered.length)bk=filtered;
@@ -622,6 +626,7 @@ localStorage.setItem('examnet_class',JSON.stringify(storedArr));
 curRetries=0;coll++;
 statEl.textContent='\u2713 '+pts.length+' Punkte';
 cur++;setTimeout(next,600);
+},500);
 }).catch(function(e){
 statEl.textContent='Fehler: '+(e&&e.message||'?');
 curRetries=0;cur++;setTimeout(next,600);
@@ -651,7 +656,7 @@ function mkOv(){var ov=document.createElement('div');ov.style.cssText='position:
 function mkEl(tag,css,txt){var e=document.createElement(tag);if(css)e.style.cssText=css;if(txt!==undefined)e.textContent=txt;return e;}
 function mkBtn(txt,bg,col,brd){return mkEl('button','padding:9px 16px;background:'+bg+';color:'+(col||'#fff')+';border:'+(brd||'none')+';border-radius:8px;cursor:pointer;font-size:13px;font-weight:600',txt);}
 var existRaw=localStorage.getItem('examnet_class');
-var existData=existRaw?JSON.parse(existRaw):[];
+var existData=[];try{existData=existRaw?JSON.parse(existRaw):[];}catch(e){localStorage.removeItem('examnet_class');}
 if(existData.length){
 var a=mkOv();
 a.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:6px','Saved data'));
@@ -739,10 +744,14 @@ var nm=sName(s);
 nameEl.textContent=(cur+1)+' / '+sel.length+': '+nm;
 pgBar.style.width=Math.round(cur/sel.length*100)+'%';
 statEl.textContent='Loading history\u2026';
-sbStore.fetchBackups(s.id).then(function(){
+var _fp;try{_fp=sbStore.fetchBackups(s.id);}catch(e){statEl.textContent='Error: '+(e&&e.message||'?');curRetries=0;cur++;setTimeout(next,600);return;}
+var _tp=new Promise(function(r,j){setTimeout(function(){j(new Error('timeout'));},10000);});
+Promise.race([_fp,_tp]).then(function(){
+if(stopped)return;
+setTimeout(function(){
 if(stopped)return;
 var bk=sbStore.backups||pinia.state.value.studentBackups.backups;
-if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Waiting\u2026';setTimeout(next,1500);return;}statEl.textContent='0 backups';curRetries=0;cur++;setTimeout(next,500);return;}
+if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Waiting\u2026';setTimeout(next,1500);return;}statEl.textContent='0 backups';curRetries=0;cur++;setTimeout(next,600);return;}
 var examDay=s.created_at&&s.created_at.slice(0,10);
 var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
 if(filtered.length)bk=filtered;
@@ -756,6 +765,7 @@ localStorage.setItem('examnet_class',JSON.stringify(storedArr));
 curRetries=0;coll++;
 statEl.textContent='\u2713 '+pts.length+' points';
 cur++;setTimeout(next,600);
+},500);
 }).catch(function(e){
 statEl.textContent='Error: '+(e&&e.message||'?');
 curRetries=0;cur++;setTimeout(next,600);
