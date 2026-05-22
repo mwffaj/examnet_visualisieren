@@ -601,7 +601,7 @@ var btnViz=mkBtn('\uD83D\uDCCA Visualisierung \u00f6ffnen','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
 var btnMd=mkBtn('\uD83D\uDCC4 MD herunterladen','#0f172a');
 btnMd.onclick=function(){var lines=['# Klassenauswertung \u2014 Entwurfsstufen',''];finalData.forEach(function(r){lines.push('## '+r.name,'');r.points.forEach(function(p){lines.push('### '+p.label+' \u2014 '+p.min+' Min. \u2014 '+p.words+' W\u00f6rter','',p.text||'_(kein Text gespeichert)_','');});lines.push('---','');});var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(lines.join('\n'));a.download='entwurfsstufen.md';a.click();};
-var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;gap:10px;margin-top:4px;flex-wrap:wrap';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);
+var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;flex-direction:column;gap:10px;margin-top:4px';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);
 d.box.appendChild(btnWrap);
 }else{
 alert('Keine Daten gesammelt.');
@@ -748,7 +748,7 @@ var btnViz=mkBtn('\uD83D\uDCCA Open visualization','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
 var btnMd=mkBtn('\uD83D\uDCC4 Download MD','#0f172a');
 btnMd.onclick=function(){var lines=['# Class Overview \u2014 Draft Stages',''];finalData.forEach(function(r){lines.push('## '+r.name,'');r.points.forEach(function(p){lines.push('### '+p.label+' \u2014 '+p.min+' min. \u2014 '+p.words+' words','',p.text||'_(no text saved)_','');});lines.push('---','');});var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(lines.join('\n'));a.download='draft_stages.md';a.click();};
-var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;gap:10px;margin-top:4px;flex-wrap:wrap';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);
+var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;flex-direction:column;gap:10px;margin-top:4px';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);
 d.box.appendChild(btnWrap);
 }else{
 alert('No data collected.');
