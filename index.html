@@ -513,7 +513,7 @@ function toMs(v){if(!v)return 0;if(typeof v==='string')return new Date(v).getTim
 function tlabel(v){var d=new Date(toMs(v));var m=d.getMinutes();return d.getHours()+':'+(m<10?'0'+m:String(m));}
 function openViz(data){window.open('https://mwffaj.github.io/examnet_visualisieren/#'+encodeURIComponent(JSON.stringify(data)),'_blank');}
 function sName(s){return((s.firstName||'')+' '+(s.lastName||'')).trim()||('Sch\u00fcler:in '+s.id);}
-function mkOv(){var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:14px;padding:24px 24px 20px;min-width:280px;max-width:460px;width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)';ov.appendChild(box);document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});return {ov:ov,box:box};}
+function mkOv(){var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:14px;padding:24px 24px 20px;min-width:280px;max-width:520px;width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)';ov.appendChild(box);document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});return {ov:ov,box:box};}
 function mkEl(tag,css,txt){var e=document.createElement(tag);if(css)e.style.cssText=css;if(txt!==undefined)e.textContent=txt;return e;}
 function mkBtn(txt,bg,col,brd){return mkEl('button','padding:9px 16px;background:'+bg+';color:'+(col||'#fff')+';border:'+(brd||'none')+';border-radius:8px;cursor:pointer;font-size:13px;font-weight:600',txt);}
 var existRaw=localStorage.getItem('examnet_class');
@@ -599,10 +599,10 @@ d.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#16a34a;margi
 d.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',coll>0?coll+' neu gesammelt, '+finalData.length+' total.':finalData.length+' gespeicherte Eintr\u00e4ge.'));
 var btnViz=mkBtn('\uD83D\uDCCA Visualisierung \u00f6ffnen','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
-d.box.appendChild(btnViz);
 var btnMd=mkBtn('\uD83D\uDCC4 MD herunterladen','#0f172a');
 btnMd.onclick=function(){var lines=['# Klassenauswertung \u2014 Entwurfsstufen',''];finalData.forEach(function(r){lines.push('## '+r.name,'');r.points.forEach(function(p){lines.push('### '+p.label+' \u2014 '+p.min+' Min. \u2014 '+p.words+' W\u00f6rter','',p.text||'_(kein Text gespeichert)_','');});lines.push('---','');});var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(lines.join('\n'));a.download='entwurfsstufen.md';a.click();};
-d.box.appendChild(btnMd);
+var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;gap:10px;margin-top:4px;flex-wrap:wrap';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);
+d.box.appendChild(btnWrap);
 }else{
 alert('Keine Daten gesammelt.');
 }
@@ -660,7 +660,7 @@ function toMs(v){if(!v)return 0;if(typeof v==='string')return new Date(v).getTim
 function tlabel(v){var d=new Date(toMs(v));var m=d.getMinutes();return d.getHours()+':'+(m<10?'0'+m:String(m));}
 function openViz(data){window.open('https://mwffaj.github.io/examnet_visualisieren/#'+encodeURIComponent(JSON.stringify(data)),'_blank');}
 function sName(s){return((s.firstName||'')+' '+(s.lastName||'')).trim()||('Student '+s.id);}
-function mkOv(){var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:14px;padding:24px 24px 20px;min-width:280px;max-width:460px;width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)';ov.appendChild(box);document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});return {ov:ov,box:box};}
+function mkOv(){var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif';var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:14px;padding:24px 24px 20px;min-width:280px;max-width:520px;width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)';ov.appendChild(box);document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});return {ov:ov,box:box};}
 function mkEl(tag,css,txt){var e=document.createElement(tag);if(css)e.style.cssText=css;if(txt!==undefined)e.textContent=txt;return e;}
 function mkBtn(txt,bg,col,brd){return mkEl('button','padding:9px 16px;background:'+bg+';color:'+(col||'#fff')+';border:'+(brd||'none')+';border-radius:8px;cursor:pointer;font-size:13px;font-weight:600',txt);}
 var existRaw=localStorage.getItem('examnet_class');
@@ -746,10 +746,10 @@ d.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#16a34a;margi
 d.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:18px',coll>0?coll+' newly collected, '+finalData.length+' total.':finalData.length+' saved entries.'));
 var btnViz=mkBtn('\uD83D\uDCCA Open visualization','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
-d.box.appendChild(btnViz);
 var btnMd=mkBtn('\uD83D\uDCC4 Download MD','#0f172a');
 btnMd.onclick=function(){var lines=['# Class Overview \u2014 Draft Stages',''];finalData.forEach(function(r){lines.push('## '+r.name,'');r.points.forEach(function(p){lines.push('### '+p.label+' \u2014 '+p.min+' min. \u2014 '+p.words+' words','',p.text||'_(no text saved)_','');});lines.push('---','');});var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(lines.join('\n'));a.download='draft_stages.md';a.click();};
-d.box.appendChild(btnMd);
+var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;gap:10px;margin-top:4px;flex-wrap:wrap';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);
+d.box.appendChild(btnWrap);
 }else{
 alert('No data collected.');
 }
