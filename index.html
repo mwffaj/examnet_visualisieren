@@ -256,7 +256,9 @@ loadNext();
 function buildModal(){
 function toMin(t){var p=t.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);}
 var s0=toMin(snaps[0].time);
-var pts=snaps.map(function(d){return{label:d.time,min:toMin(d.time)-s0,words:d.words,text:d.text};});
+var _do=0,_pm=0;var pts=snaps.map(function(d,i){var raw=toMin(d.time);if(i>0&&raw-_pm<-5){_do+=1440;}_pm=raw;return{label:d.time,min:raw-s0+_do,words:d.words,text:d.text};});
+var _sess=[[]],_ssi=0;pts.forEach(function(p,i){if(i>0&&p.min-pts[i-1].min>120){_sess.push([]);_ssi++;}_sess[_ssi].push(p);});
+if(_sess.length>1){var _off=0,_SP=8;_sess.forEach(function(s,di){var _s0=s[0].min;s.forEach(function(p){p.min=p.min-_s0+_off;if(di>0)p.label='T'+(di+1)+' '+p.label;});_off=s[s.length-1].min+_SP;});}
 var n=pts.length;
 function tok(t){return(t||'').split(/\s+/).filter(function(w){return w.length>0;});}
 var hasText=tok(pts[n-1].text).length>0;
@@ -291,8 +293,8 @@ for(var gi=0;gi<=5;gi++){var gy=pt+(gi/5)*ch;sv+='<line x1="'+pl+'" y1="'+gy+'" 
 sv+='<text x="13" y="'+(pt+ch/2)+'" text-anchor="middle" font-size="11" fill="#94a3b8" transform="rotate(-90,13,'+(pt+ch/2)+')">W\u00f6rter</text>';
 var xSteps=Math.min(maxM,6);
 for(var xi=0;xi<=xSteps;xi++){var xv=Math.round(maxM*xi/xSteps),gx=pl+(xv/maxM)*cw;sv+='<text x="'+gx+'" y="'+(H-4)+'" text-anchor="middle" font-size="10" fill="#94a3b8">'+xv+"'</text>";}
-sv+='<polygon points="'+sx(pts[0])+','+(pt+ch)+' '+pts.map(function(p){return sx(p)+','+sy(p);}).join(' ')+' '+sx(pts[n-1])+','+(pt+ch)+'" fill="rgba(37,99,235,.07)"/>';
-sv+='<polyline points="'+pts.map(function(p){return sx(p)+','+sy(p);}).join(' ')+'" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+if(_sess.length===1){sv+='<polygon points="'+sx(pts[0])+','+(pt+ch)+' '+pts.map(function(p){return sx(p)+','+sy(p);}).join(' ')+' '+sx(pts[n-1])+','+(pt+ch)+'" fill="rgba(37,99,235,.07)"/>';}else{_sess.forEach(function(s,di){if(di>0){var bx=sx(s[0])-4;sv+='<line x1="'+bx+'" y1="'+pt+'" x2="'+bx+'" y2="'+(pt+ch)+'" stroke="#cbd5e1" stroke-dasharray="3,3" stroke-width="1"/><text x="'+bx+'" y="'+(pt+ch+pb-4)+'" text-anchor="middle" font-size="9" fill="#94a3b8">T'+(di+1)+'</text>';}});}
+_sess.forEach(function(s){sv+='<polyline points="'+s.map(function(p){return sx(p)+','+sy(p);}).join(' ')+'" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';});
 sv+='<g id="_enDots">';
 pts.forEach(function(p,pi){var x=sx(p),y=sy(p);sv+='<text x="'+x+'" y="'+(y-10)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#1d4ed8">'+p.words+'</text><circle id="_enDot_'+pi+'" cx="'+x+'" cy="'+y+'" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2"/>';});
 sv+='</g>';
@@ -355,8 +357,8 @@ htmlBtn.onclick=function(){
     sv+='<text x="13" y="'+(pt+ch/2)+'" text-anchor="middle" font-size="11" fill="#94a3b8" transform="rotate(-90,13,'+(pt+ch/2)+')">W\u00f6rter<\/text>';
     var xSteps=Math.min(maxM,6);
     for(var xi=0;xi<=xSteps;xi++){var xv=Math.round(maxM*xi/xSteps),gx=pl+(xv/maxM)*cw;sv+='<text x="'+gx+'" y="'+(H-4)+'" text-anchor="middle" font-size="10" fill="#94a3b8">'+xv+"'<\/text>";}
-    sv+='<polygon points="'+sx(pts[0])+','+(pt+ch)+' '+pts.map(function(p){return sx(p)+','+sy(p);}).join(' ')+' '+sx(pts[n-1])+','+(pt+ch)+'" fill="rgba(37,99,235,.07)"\/>';
-    sv+='<polyline points="'+pts.map(function(p){return sx(p)+','+sy(p);}).join(' ')+'" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"\/>';
+    if(_sess.length===1){sv+='<polygon points="'+sx(pts[0])+','+(pt+ch)+' '+pts.map(function(p){return sx(p)+','+sy(p);}).join(' ')+' '+sx(pts[n-1])+','+(pt+ch)+'" fill="rgba(37,99,235,.07)"\/>';}else{_sess.forEach(function(s,di){if(di>0){var bx=sx(s[0])-4;sv+='<line x1="'+bx+'" y1="'+pt+'" x2="'+bx+'" y2="'+(pt+ch)+'" stroke="#cbd5e1" stroke-dasharray="3,3" stroke-width="1"\/><text x="'+bx+'" y="'+(pt+ch+pb-4)+'" text-anchor="middle" font-size="9" fill="#94a3b8">T'+(di+1)+'<\/text>';}});}
+    _sess.forEach(function(s){sv+='<polyline points="'+s.map(function(p){return sx(p)+','+sy(p);}).join(' ')+'" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"\/>';});
     sv+='<g id="_enDots">';
     pts.forEach(function(p,pi){var x=sx(p),y=sy(p);sv+='<text x="'+x+'" y="'+(y-10)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#1d4ed8">'+p.words+'<\/text><circle id="_enDot_'+pi+'" cx="'+x+'" cy="'+y+'" r="4.5" fill="#fff" stroke="#2563eb" stroke-width="2"\/>';});
     sv+='<\/g>';
