@@ -688,8 +688,8 @@ levelB();
 }
 function levelB(){
 var b=mkOv();
-b.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px','Collect class'));
-b.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:12px',students.length+' students \u2014 who should be collected?'));
+b.box.appendChild(mkEl('div','font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px','Select students'));
+b.box.appendChild(mkEl('div','font-size:13px;color:#64748b;margin-bottom:12px',students.length+' students \u2014 which ones to include?'));
 var masterRow=mkEl('div','display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0');
 var masterChk=mkEl('input');masterChk.type='checkbox';masterChk.checked=true;masterChk.style.cssText='width:15px;height:15px;cursor:pointer;flex-shrink:0';
 masterRow.appendChild(masterChk);
@@ -752,7 +752,7 @@ var btnViz=mkBtn('\uD83D\uDCCA Open visualization','#2563eb');
 btnViz.onclick=function(){d.ov.remove();openViz(finalData);};
 var btnMd=mkBtn('\uD83D\uDCC4 MD \u2014 combined','#0f172a');
 btnMd.onclick=function(){var lines=['# Class Overview \u2014 Draft Stages',''];finalData.forEach(function(r){lines.push('## '+r.name,'');r.points.forEach(function(p){lines.push('### '+p.label+' \u2014 '+p.min+' min. \u2014 '+p.words+' words','',p.text||'_(no text saved)_','');});lines.push('---','');});var a=document.createElement('a');a.href='data:text/markdown;charset=utf-8,'+encodeURIComponent(lines.join('\n'));a.download='draft_stages.md';a.click();};
-var btnZip=mkBtn('\uD83D\uDCE6 ZIP \u2014 one file each','#0f172a');
+var btnZip=mkBtn('\uD83D\uDCE6 ZIP \u2014 one file per student','#0f172a');
 btnZip.onclick=function(){var files=finalData.map(function(r){var lines=['# '+r.name+' \u2014 Draft Stages',''];r.points.forEach(function(p){lines.push('### '+p.label+' \u2014 '+p.min+' min. \u2014 '+p.words+' words','',p.text||'_(no text saved)_','');});return{name:r.name.replace(/[\/\\:*?"<>|]/g,'_')+'.md',data:lines.join('\n')};});var zip=makeZip(files);var blob=new Blob([zip],{type:'application/zip'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='draft_stages.zip';a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);};
 var btnWrap=document.createElement('div');btnWrap.style.cssText='display:flex;flex-direction:column;gap:10px;margin-top:4px';btnWrap.appendChild(btnViz);btnWrap.appendChild(btnMd);btnWrap.appendChild(btnZip);
 d.box.appendChild(btnWrap);
@@ -858,21 +858,21 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     },
     en: {
       'card-class-title': '\uD83D\uDCCA Class Overview',
-      'card-class-sub': 'Collect and visualize writing histories of the whole class.',
+      'card-class-sub': 'Collect and visualize writing histories for the entire class.',
       'step1-auto-label': 'On the class results page, click:',
-      'bm-class-flow': '\u26a1 Evaluate Class',
-      'drag-hint': '\u2190 drag to bookmarks bar',
+      'bm-class-flow': '\u26a1 Analyse Class',
+      'drag-hint': '\u2190 drag to the bookmarks bar',
       'note-privacy': '\uD83D\uDD12 Nothing is sent to external servers.',
       'card-single-h3': 'Individual View',
       'step1-single-label': 'Open the response history of a student, then click:',
       'bm-single': '\uD83D\uDCC8 Individual View',
-      'viz-dots': '\u25cf Data points',
+      'viz-dots': '\u25cf Snapshots',
       'viz-fs': '\u26f6 Full screen',
       'viz-back': '\u2190 Back',
       'viz-csv': 'Export CSV',
       'viz-save': 'Save as HTML',
       'viz-title': 'Class overview \u2014 {n} students',
-      'tbl-chk-title': 'Toggle all',
+      'tbl-chk-title': 'Show/hide all',
       'tbl-name': 'Name',
       'tbl-words': 'Words',
       'tbl-min': 'Min.',
