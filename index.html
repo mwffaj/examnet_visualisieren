@@ -654,7 +654,8 @@ var _md=sorted.some(function(b,i){if(!i)return false;var d0=new Date(toMs(sorted
 var pts=sorted.map(function(b){var _h=b.studentAnswer.replace(/<br\s*\/?>/gi,' ').replace(/<\/p>/gi,' ').replace(/<\/div>/gi,' ').replace(/<\/li>/gi,' ');var tmp=document.createElement('div');tmp.innerHTML=_h;var txt=(tmp.textContent||tmp.innerText||'').replace(/\s+/g,' ').trim();var d=new Date(toMs(b.createdAt));var mi=d.getMinutes();var hhmm=d.getHours()+':'+(mi<10?'0':'')+mi;var label=_md?(d.getDate()+'.'+(d.getMonth()+1)+'. '+hhmm):hhmm;return{label:label,min:Math.round((toMs(b.createdAt)-ms0)/60000),words:txt.split(/\s+/).filter(function(w){return w.length>0;}).length,text:txt};});
 var storedArr=JSON.parse(localStorage.getItem('examnet_class')||'[]');
 storedArr=storedArr.filter(function(x){return x.name!==nm;});
-storedArr.push({name:nm,points:pts});
+var leaveMin=s.leave_time?Math.round((toMs(s.leave_time)-ms0)/60000):null;
+storedArr.push({name:nm,leaveMin:leaveMin,points:pts});
 localStorage.setItem('examnet_class',JSON.stringify(storedArr));
 curRetries=0;coll++;
 statEl.textContent='\u2713 '+pts.length+' Punkte';
@@ -805,7 +806,8 @@ var _md=sorted.some(function(b,i){if(!i)return false;var d0=new Date(toMs(sorted
 var pts=sorted.map(function(b){var _h=b.studentAnswer.replace(/<br\s*\/?>/gi,' ').replace(/<\/p>/gi,' ').replace(/<\/div>/gi,' ').replace(/<\/li>/gi,' ');var tmp=document.createElement('div');tmp.innerHTML=_h;var txt=(tmp.textContent||tmp.innerText||'').replace(/\s+/g,' ').trim();var d=new Date(toMs(b.createdAt));var mi=d.getMinutes();var hhmm=d.getHours()+':'+(mi<10?'0':'')+mi;var label=_md?(d.getDate()+'.'+(d.getMonth()+1)+'. '+hhmm):hhmm;return{label:label,min:Math.round((toMs(b.createdAt)-ms0)/60000),words:txt.split(/\s+/).filter(function(w){return w.length>0;}).length,text:txt};});
 var storedArr=JSON.parse(localStorage.getItem('examnet_class')||'[]');
 storedArr=storedArr.filter(function(x){return x.name!==nm;});
-storedArr.push({name:nm,points:pts});
+var leaveMin=s.leave_time?Math.round((toMs(s.leave_time)-ms0)/60000):null;
+storedArr.push({name:nm,leaveMin:leaveMin,points:pts});
 localStorage.setItem('examnet_class',JSON.stringify(storedArr));
 curRetries=0;coll++;
 statEl.textContent='\u2713 '+pts.length+' points';
@@ -989,11 +991,20 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       var lx = sx(last), ly = sy(last);
       var anchor = lx > W * 0.6 ? 'end' : 'start';
       var tx = anchor === 'end' ? lx - 7 : lx + 7;
-      var pts = r.points.map(function(p) { return sx(p) + ',' + sy(p); }).join(' ');
-
-      sv += '<g id="svg-student-' + i + '" opacity="0.8" style="cursor:pointer">' +
-        '<polyline id="svg-line-' + i + '" points="' + pts + '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round"/>' +
-        '<polyline points="' + pts + '" fill="none" stroke="transparent" stroke-width="12" pointer-events="stroke"/>';
+      var lm = r.leaveMin != null ? r.leaveMin : -1;
+      var segs = [[]];
+      r.points.forEach(function(p, pi) {
+        var brk = pi > 0 && ((lm >= 0 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
+        if (brk) segs.push([]);
+        segs[segs.length-1].push(p);
+      });
+      sv += '<g id="svg-student-' + i + '" opacity="0.8" style="cursor:pointer">';
+      segs.forEach(function(seg) {
+        if (seg.length < 2) return;
+        var spts = seg.map(function(p) { return sx(p) + ',' + sy(p); }).join(' ');
+        sv += '<polyline points="' + spts + '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round"/>';
+        sv += '<polyline points="' + spts + '" fill="none" stroke="transparent" stroke-width="12" pointer-events="stroke"/>';
+      });
       r.points.forEach(function(p) {
         sv += '<circle cx="' + sx(p) + '" cy="' + sy(p) + '" r="2.5" fill="#fff" stroke="' + c + '" stroke-width="1.5"/>';
       });
@@ -1062,10 +1073,13 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       }
     });
 
+    function setLines(i, w) {
+      [].forEach.call(document.getElementById('svg-student-' + i).querySelectorAll('polyline[stroke-linejoin]'), function(pl) { pl.setAttribute('stroke-width', w); });
+    }
     function highlight(idx) {
       data.forEach(function(r, i) {
         document.getElementById('svg-student-' + i).setAttribute('opacity', '0.8');
-        document.getElementById('svg-line-' + i).setAttribute('stroke-width', '1.8');
+        setLines(i, '1.8');
         document.getElementById('svg-label-' + i).setAttribute('display', 'none');
         var row = tableEl.querySelector('[data-idx="' + i + '"]');
         if (row) { row.style.background = ''; row.style.fontWeight = ''; }
@@ -1076,7 +1090,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         if (i !== idx) document.getElementById('svg-student-' + i).setAttribute('opacity', '0.15');
       });
       document.getElementById('svg-student-' + idx).setAttribute('opacity', '1');
-      document.getElementById('svg-line-' + idx).setAttribute('stroke-width', '3');
+      setLines(idx, '3');
       document.getElementById('svg-label-' + idx).setAttribute('display', '');
       var row = tableEl.querySelector('[data-idx="' + idx + '"]');
       if (row) { row.style.background = '#eff6ff'; row.style.fontWeight = '600'; }
@@ -1086,7 +1100,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       selected = -1;
       data.forEach(function(r, i) {
         document.getElementById('svg-student-' + i).setAttribute('opacity', '0.8');
-        document.getElementById('svg-line-' + i).setAttribute('stroke-width', '1.8');
+        setLines(i, '1.8');
         document.getElementById('svg-label-' + i).setAttribute('display', 'none');
         var row = tableEl.querySelector('[data-idx="' + i + '"]');
         if (row) { row.style.background = ''; row.style.fontWeight = ''; }
