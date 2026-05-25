@@ -954,11 +954,33 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     function C(i) { return 'hsl(' + (((i * 137.5) % 360) | 0) + ',65%,45%)'; }
 
+    // Pre-compute display mins: compress breaks to a small visual gap
+    data.forEach(function(r) {
+      var lm = r.leaveMin != null ? r.leaveMin : -1;
+      var segs = [[]];
+      r.points.forEach(function(p, pi) {
+        var brk = pi > 0 && ((lm >= 0 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
+        if (brk) segs.push([]);
+        segs[segs.length-1].push(p);
+      });
+      r._segs = segs;
+      if (segs.length > 1) {
+        var off = 0;
+        segs.forEach(function(seg) {
+          var s0 = seg[0].min;
+          seg.forEach(function(p) { p._dm = p.min - s0 + off; });
+          off = seg[seg.length-1]._dm + 8;
+        });
+      } else {
+        r.points.forEach(function(p) { p._dm = p.min; });
+      }
+    });
+
     var mW = 0, mM = 0;
-    data.forEach(function(s) {
-      s.points.forEach(function(p) {
+    data.forEach(function(r) {
+      r.points.forEach(function(p) {
         if (p.words > mW) mW = p.words;
-        if (p.min > mM) mM = p.min;
+        if (p._dm > mM) mM = p._dm;
       });
     });
     mW = Math.ceil(mW / 50) * 50 || 50;
@@ -966,7 +988,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     var W = 620, H = 220, pl = 38, pt = 14, pr = 10, pb = 26;
     var cw = W - pl - pr, ch = H - pt - pb;
-    function sx(p) { return pl + (p.min / mM) * cw; }
+    function sx(p) { return pl + (p._dm / mM) * cw; }
     function sy(p) { return pt + ch - (p.words / mW) * ch; }
 
     var sv = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;border-radius:8px" xmlns="http://www.w3.org/2000/svg">' +
@@ -991,15 +1013,8 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       var lx = sx(last), ly = sy(last);
       var anchor = lx > W * 0.6 ? 'end' : 'start';
       var tx = anchor === 'end' ? lx - 7 : lx + 7;
-      var lm = r.leaveMin != null ? r.leaveMin : -1;
-      var segs = [[]];
-      r.points.forEach(function(p, pi) {
-        var brk = pi > 0 && ((lm >= 0 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
-        if (brk) segs.push([]);
-        segs[segs.length-1].push(p);
-      });
       sv += '<g id="svg-student-' + i + '" opacity="0.8" style="cursor:pointer">';
-      segs.forEach(function(seg) {
+      r._segs.forEach(function(seg) {
         if (seg.length < 2) return;
         var spts = seg.map(function(p) { return sx(p) + ',' + sy(p); }).join(' ');
         sv += '<polyline points="' + spts + '" fill="none" stroke="' + c + '" stroke-width="1.8" stroke-linejoin="round"/>';
