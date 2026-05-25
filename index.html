@@ -1072,20 +1072,6 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     var selected = -1;
 
     var sortCol = null, sortDir = -1;
-    tableEl.querySelector('.header').addEventListener('click', function(e) {
-      var sp = e.target.closest ? e.target.closest('[data-sort]') : e.target;
-      var col = sp && sp.getAttribute && sp.getAttribute('data-sort');
-      if (!col) return;
-      sortDir = sortCol === col ? -sortDir : -1;
-      sortCol = col;
-      tableEl.querySelectorAll('.sa').forEach(function(a) { a.textContent = ''; });
-      tableEl.querySelector('.sa[data-col="' + col + '"]').textContent = sortDir < 0 ? '\u00a0\u25bc' : '\u00a0\u25b2';
-      var rows = [].slice.call(tableEl.querySelectorAll('.viz-row:not(.header)'));
-      rows.sort(function(a, b) {
-        return (parseFloat(a.getAttribute('data-' + col)) - parseFloat(b.getAttribute('data-' + col))) * sortDir;
-      });
-      rows.forEach(function(row) { tableEl.appendChild(row); });
-    });
 
     function updateMasterChk() {
       var chks = tableEl.querySelectorAll('.viz-chk');
@@ -1174,7 +1160,28 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     });
     tableEl.addEventListener('click', function(e) {
       if (e.target.type === 'checkbox') return;
+      // Sort header columns
       var el = e.target;
+      while (el && el !== tableEl) {
+        var col = el.getAttribute && el.getAttribute('data-sort');
+        if (col) {
+          sortDir = sortCol === col ? -sortDir : -1;
+          sortCol = col;
+          tableEl.querySelectorAll('.sa').forEach(function(a) { a.textContent = ''; });
+          var arrow = tableEl.querySelector('.sa[data-col="' + col + '"]');
+          if (arrow) arrow.textContent = sortDir < 0 ? '\u00a0\u25bc' : '\u00a0\u25b2';
+          var rows = [].slice.call(tableEl.querySelectorAll('.viz-row:not(.header)'));
+          rows.sort(function(a, b) {
+            return (parseFloat(a.getAttribute('data-' + col)) - parseFloat(b.getAttribute('data-' + col))) * sortDir;
+          });
+          var hdr = tableEl.querySelector('.header');
+          rows.forEach(function(row) { tableEl.appendChild(row); });
+          return;
+        }
+        el = el.parentNode;
+      }
+      // Highlight row
+      el = e.target;
       while (el && el !== tableEl) {
         if (el.getAttribute && el.getAttribute('data-idx') !== null) {
           highlight(parseInt(el.getAttribute('data-idx'), 10));
