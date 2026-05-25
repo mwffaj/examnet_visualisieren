@@ -1038,12 +1038,12 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     data.forEach(function(r, i) {
       var c = C(i);
       var last = r.points[r.points.length - 1];
-      var avg = last.min > 0 ? (last.words / last.min).toFixed(1) : '\u2013';
+      var avg = last._dm > 0 ? (last.words / last._dm).toFixed(1) : '\u2013';
       html += '<div class="viz-row" data-idx="' + i + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
         '<span><input type="checkbox" class="viz-chk" data-idx="' + i + '" checked style="cursor:pointer;margin:0"></span>' +
         '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
         '<span style="font-weight:600">' + last.words + '</span>' +
-        '<span style="color:#94a3b8">' + last.min + '</span>' +
+        '<span style="color:#94a3b8">' + last._dm + '</span>' +
         '<span style="color:#94a3b8">' + avg + '</span>' +
         '</div>';
     });
@@ -1194,7 +1194,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       var rows = [T[LANG]['csv-header']];
       data.forEach(function(r) {
         r.points.forEach(function(p) {
-          rows.push('"' + r.name.replace(/"/g, '""') + '",' + p.label + ',' + p.min + ',' + p.words);
+          rows.push('"' + r.name.replace(/"/g, '""') + '",' + p.label + ',' + (p._dm != null ? p._dm : p.min) + ',' + p.words);
         });
       });
       var a = document.createElement('a');
