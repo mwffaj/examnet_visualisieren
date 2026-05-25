@@ -957,9 +957,11 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     // Pre-compute display mins: compress breaks, align all second sessions to same x
     data.forEach(function(r) {
       var lm = r.leaveMin != null ? r.leaveMin : -1;
+      // Only split on leave_time if there are 2+ backups after it (1 alone = submission snapshot, not a real second session)
+      var afterLeave = lm >= 10 ? r.points.filter(function(p) { return p.min > lm; }).length : 0;
       var segs = [[]];
       r.points.forEach(function(p, pi) {
-        var brk = pi > 0 && ((lm >= 10 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
+        var brk = pi > 0 && ((afterLeave > 1 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
         if (brk) segs.push([]);
         segs[segs.length-1].push(p);
       });
