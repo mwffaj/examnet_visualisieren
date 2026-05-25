@@ -959,7 +959,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       var lm = r.leaveMin != null ? r.leaveMin : -1;
       var segs = [[]];
       r.points.forEach(function(p, pi) {
-        var brk = pi > 0 && ((lm >= 0 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
+        var brk = pi > 0 && ((lm >= 10 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
         if (brk) segs.push([]);
         segs[segs.length-1].push(p);
       });
