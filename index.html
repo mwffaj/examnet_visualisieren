@@ -645,8 +645,8 @@ setTimeout(function(){
 if(stopped)return;
 var bk=sbStore.backups||pinia.state.value.studentBackups.backups;
 if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Warte\u2026';setTimeout(next,1500);return;}statEl.textContent='0 Backups';curRetries=0;cur++;setTimeout(next,600);return;}
-var examDay=s.created_at&&s.created_at.slice(0,10);
-var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
+var examStart=toMs(s.created_at);
+var filtered=examStart?bk.filter(function(b){return toMs(b.createdAt)>=examStart;}):[];
 if(filtered.length)bk=filtered;
 var sorted=bk.slice().sort(function(a,b){return toMs(a.createdAt)-toMs(b.createdAt);});
 var ms0=toMs(sorted[0].createdAt);
@@ -797,8 +797,8 @@ setTimeout(function(){
 if(stopped)return;
 var bk=sbStore.backups||pinia.state.value.studentBackups.backups;
 if(!bk||!bk.length){if(curRetries<1){curRetries++;statEl.textContent='Waiting\u2026';setTimeout(next,1500);return;}statEl.textContent='0 backups';curRetries=0;cur++;setTimeout(next,600);return;}
-var examDay=s.created_at&&s.created_at.slice(0,10);
-var filtered=examDay?bk.filter(function(b){var ms=toMs(b.createdAt);return ms&&new Date(ms).toISOString().slice(0,10)===examDay;}):[];
+var examStart=toMs(s.created_at);
+var filtered=examStart?bk.filter(function(b){return toMs(b.createdAt)>=examStart;}):[];
 if(filtered.length)bk=filtered;
 var sorted=bk.slice().sort(function(a,b){return toMs(a.createdAt)-toMs(b.createdAt);});
 var ms0=toMs(sorted[0].createdAt);
