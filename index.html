@@ -954,7 +954,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     function C(i) { return 'hsl(' + (((i * 137.5) % 360) | 0) + ',65%,45%)'; }
 
-    // Pre-compute display mins: compress breaks to a small visual gap
+    // Pre-compute display mins: compress breaks, align all second sessions to same x
     data.forEach(function(r) {
       var lm = r.leaveMin != null ? r.leaveMin : -1;
       var segs = [[]];
@@ -964,12 +964,23 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         segs[segs.length-1].push(p);
       });
       r._segs = segs;
-      if (segs.length > 1) {
-        var off = 0;
-        segs.forEach(function(seg) {
+    });
+    // Find max first-session duration so all second sessions start at same x
+    var maxSeg1 = 0;
+    data.forEach(function(r) {
+      if (r._segs.length > 1) {
+        var s = r._segs[0];
+        var dur = s[s.length-1].min - s[0].min;
+        if (dur > maxSeg1) maxSeg1 = dur;
+      }
+    });
+    var commonSeg2Start = maxSeg1 > 0 ? maxSeg1 + 8 : null;
+    data.forEach(function(r) {
+      if (r._segs.length > 1 && commonSeg2Start !== null) {
+        r._segs.forEach(function(seg, si) {
           var s0 = seg[0].min;
+          var off = si === 0 ? 0 : si === 1 ? commonSeg2Start : r._segs[si-1][r._segs[si-1].length-1]._dm + 8;
           seg.forEach(function(p) { p._dm = p.min - s0 + off; });
-          off = seg[seg.length-1]._dm + 8;
         });
       } else {
         r.points.forEach(function(p) { p._dm = p.min; });
@@ -1005,6 +1016,11 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       var xv = Math.round(mM * j / xSteps);
       var gx = pl + (xv / mM) * cw;
       sv += '<text x="' + gx + '" y="' + (H - 5) + '" text-anchor="middle" font-size="10" fill="#94a3b8">' + xv + "'</text>";
+    }
+    // Dashed vertical line marking start of second session
+    if (commonSeg2Start !== null) {
+      var bx = pl + (commonSeg2Start / mM) * cw;
+      sv += '<line x1="' + bx + '" y1="' + pt + '" x2="' + bx + '" y2="' + (pt + ch) + '" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3"/>';
     }
 
     data.forEach(function(r, i) {
