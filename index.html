@@ -1050,17 +1050,19 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     document.getElementById('viz-chart').innerHTML = sv;
 
     var L = T[LANG];
-    var html = '<div class="viz-row header"><span><input type="checkbox" id="viz-chk-all" checked title="' + L['tbl-chk-title'] + '" style="cursor:pointer;margin:0"></span><span>' + L['tbl-name'] + '</span><span>' + L['tbl-words'] + '</span><span>' + L['tbl-min'] + '</span><span>' + L['tbl-avg'] + '</span></div>';
+    function shdr(lbl, col) { return '<span data-sort="' + col + '" style="cursor:pointer;user-select:none">' + lbl + '<span class="sa" data-col="' + col + '"></span></span>'; }
+    var html = '<div class="viz-row header"><span><input type="checkbox" id="viz-chk-all" checked title="' + L['tbl-chk-title'] + '" style="cursor:pointer;margin:0"></span><span>' + L['tbl-name'] + '</span>' + shdr(L['tbl-words'], 'words') + shdr(L['tbl-min'], 'min') + shdr(L['tbl-avg'], 'avg') + '</div>';
     data.forEach(function(r, i) {
       var c = C(i);
       var last = r.points[r.points.length - 1];
-      var avg = last._dm > 0 ? (last.words / last._dm).toFixed(1) : '\u2013';
-      html += '<div class="viz-row" data-idx="' + i + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
+      var avgVal = last._dm > 0 ? last.words / last._dm : -1;
+      var avgStr = last._dm > 0 ? avgVal.toFixed(1) : '\u2013';
+      html += '<div class="viz-row" data-idx="' + i + '" data-words="' + last.words + '" data-min="' + last._dm + '" data-avg="' + avgVal + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
         '<span><input type="checkbox" class="viz-chk" data-idx="' + i + '" checked style="cursor:pointer;margin:0"></span>' +
         '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
         '<span style="font-weight:600">' + last.words + '</span>' +
         '<span style="color:#94a3b8">' + last._dm + '</span>' +
-        '<span style="color:#94a3b8">' + avg + '</span>' +
+        '<span style="color:#94a3b8">' + avgStr + '</span>' +
         '</div>';
     });
     document.getElementById('viz-table').innerHTML = html;
@@ -1068,6 +1070,22 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     var chartEl = document.getElementById('viz-chart');
     var tableEl = document.getElementById('viz-table');
     var selected = -1;
+
+    var sortCol = null, sortDir = -1;
+    tableEl.querySelector('.header').addEventListener('click', function(e) {
+      var sp = e.target.closest ? e.target.closest('[data-sort]') : e.target;
+      var col = sp && sp.getAttribute && sp.getAttribute('data-sort');
+      if (!col) return;
+      sortDir = sortCol === col ? -sortDir : -1;
+      sortCol = col;
+      tableEl.querySelectorAll('.sa').forEach(function(a) { a.textContent = ''; });
+      tableEl.querySelector('.sa[data-col="' + col + '"]').textContent = sortDir < 0 ? '\u00a0\u25bc' : '\u00a0\u25b2';
+      var rows = [].slice.call(tableEl.querySelectorAll('.viz-row:not(.header)'));
+      rows.sort(function(a, b) {
+        return (parseFloat(a.getAttribute('data-' + col)) - parseFloat(b.getAttribute('data-' + col))) * sortDir;
+      });
+      rows.forEach(function(row) { tableEl.appendChild(row); });
+    });
 
     function updateMasterChk() {
       var chks = tableEl.querySelectorAll('.viz-chk');
