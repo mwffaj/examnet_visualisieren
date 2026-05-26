@@ -984,7 +984,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
           var afterLeave = lm >= 10 ? r.points.filter(function(p) { return p.min > lm; }).length : 0;
           var segs = [[]];
           r.points.forEach(function(p, pi) {
-            var brk = pi > 0 && ((afterLeave > 1 && p.min > lm && r.points[pi-1].min <= lm) || p.min - r.points[pi-1].min > 120);
+            var brk = pi > 0 && afterLeave > 1 && p.min > lm && r.points[pi-1].min <= lm;
             if (brk) segs.push([]);
             segs[segs.length-1].push(p);
           });
