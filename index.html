@@ -973,44 +973,58 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
 
     function computeAndDraw() {
       var commonSeg2Start = null;
-      if (breakMode === 'none') {
-        data.forEach(function(r) {
-          r._segs = [r.points];
-          r.points.forEach(function(p) { p._dm = p.min; });
+
+      // Step 1: detect real breaks for every student (independent of breakMode)
+      // A real break requires: leaveMin >= 10, at least 2 post-leave backups,
+      // AND a gap of >= 20 min between last pre-leave and first post-leave backup.
+      data.forEach(function(r) {
+        var lm = r.leaveMin != null ? r.leaveMin : -1;
+        r._hasBreak = false;
+        r._brkSegs = [r.points];
+        if (lm < 10) return;
+        var afterLeave = r.points.filter(function(p) { return p.min > lm; }).length;
+        if (afterLeave < 2) return;
+        var lastPre = null, firstPost = null;
+        r.points.forEach(function(p) {
+          if (p.min <= lm) lastPre = p;
+          else if (!firstPost) firstPost = p;
         });
-      } else {
-        data.forEach(function(r) {
-          var lm = r.leaveMin != null ? r.leaveMin : -1;
-          var afterLeave = lm >= 10 ? r.points.filter(function(p) { return p.min > lm; }).length : 0;
-          var segs = [[]];
-          r.points.forEach(function(p, pi) {
-            var brk = pi > 0 && afterLeave > 1 && p.min > lm && r.points[pi-1].min <= lm;
-            if (brk) segs.push([]);
-            segs[segs.length-1].push(p);
-          });
-          r._segs = segs;
+        if (!lastPre || !firstPost || firstPost.min - lastPre.min < 20) return;
+        // Real break confirmed
+        r._hasBreak = true;
+        var segs = [[]];
+        r.points.forEach(function(p, pi) {
+          if (pi > 0 && p.min > lm && r.points[pi-1].min <= lm) segs.push([]);
+          segs[segs.length-1].push(p);
         });
-        if (breakMode === 'parallel') {
-          var maxSeg1 = 0;
-          data.forEach(function(r) {
-            if (r._segs.length > 1) { var s = r._segs[0]; var dur = s[s.length-1].min - s[0].min; if (dur > maxSeg1) maxSeg1 = dur; }
-          });
-          commonSeg2Start = maxSeg1 > 0 ? maxSeg1 + 8 : null;
-        }
+        r._brkSegs = segs;
+      });
+
+      // Step 2: compute commonSeg2Start for parallel mode
+      if (breakMode === 'parallel') {
+        var maxSeg1 = 0;
         data.forEach(function(r) {
-          if (r._segs.length > 1) {
-            r._segs.forEach(function(seg, si) {
-              var s0 = seg[0].min;
-              var off = si === 0 ? 0 : si === 1
-                ? (breakMode === 'parallel' && commonSeg2Start !== null ? commonSeg2Start : r._segs[0][r._segs[0].length-1]._dm + 8)
-                : r._segs[si-1][r._segs[si-1].length-1]._dm + 8;
-              seg.forEach(function(p) { p._dm = p.min - s0 + off; });
-            });
-          } else {
-            r.points.forEach(function(p) { p._dm = p.min; });
-          }
+          if (r._hasBreak) { var s = r._brkSegs[0]; var dur = s[s.length-1].min - s[0].min; if (dur > maxSeg1) maxSeg1 = dur; }
         });
+        commonSeg2Start = maxSeg1 > 0 ? maxSeg1 + 8 : null;
       }
+
+      // Step 3: compute _dm — always compress real breaks to avoid stretching the x-axis
+      data.forEach(function(r) {
+        if (!r._hasBreak) {
+          r.points.forEach(function(p) { p._dm = p.min; });
+        } else {
+          r._brkSegs.forEach(function(seg, si) {
+            var s0 = seg[0].min;
+            var off = si === 0 ? 0 : si === 1
+              ? (breakMode === 'parallel' && commonSeg2Start !== null ? commonSeg2Start : r._brkSegs[0][r._brkSegs[0].length-1]._dm + 8)
+              : r._brkSegs[si-1][r._brkSegs[si-1].length-1]._dm + 8;
+            seg.forEach(function(p) { p._dm = p.min - s0 + off; });
+          });
+        }
+        // _segs for drawing: split only in parallel/individual mode
+        r._segs = (breakMode !== 'none' && r._hasBreak) ? r._brkSegs : [r.points];
+      });
 
       var mW = 0, mM = 0;
       data.forEach(function(r) { r.points.forEach(function(p) { if (p.words > mW) mW = p.words; if (p._dm > mM) mM = p._dm; }); });
@@ -1048,6 +1062,12 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
           sv += '<polyline points="' + spts + '" fill="none" stroke="transparent" stroke-width="12" pointer-events="stroke"/>';
         });
         r.points.forEach(function(p) { sv += '<circle cx="' + sx(p) + '" cy="' + sy(p) + '" r="2.5" fill="#fff" stroke="' + c + '" stroke-width="1.5"/>'; });
+        // In 'none' mode: draw a small marker where the break occurred
+        if (breakMode === 'none' && r._hasBreak) {
+          var bp = r._brkSegs[0][r._brkSegs[0].length-1];
+          var bpx = sx(bp), bpy = sy(bp);
+          sv += '<circle cx="' + bpx + '" cy="' + bpy + '" r="5" fill="none" stroke="' + c + '" stroke-width="1.5" stroke-dasharray="3,2"/>';
+        }
         sv += '<text id="svg-label-' + i + '" x="' + tx + '" y="' + (ly - 9) + '" text-anchor="' + anchor + '" font-size="11" font-weight="600" fill="' + c + '" stroke="white" stroke-width="3" paint-order="stroke" display="none">' + r.name + '</text></g>';
       });
       sv += '<line x1="' + pl + '" y1="' + pt + '" x2="' + pl + '" y2="' + (pt + ch) + '" stroke="#cbd5e1" stroke-width="1.5"/><line x1="' + pl + '" y1="' + (pt + ch) + '" x2="' + (pl + cw) + '" y2="' + (pt + ch) + '" stroke="#cbd5e1" stroke-width="1.5"/></svg>';
