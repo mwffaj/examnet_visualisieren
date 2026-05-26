@@ -227,7 +227,7 @@
 (function(){
 function exTxt(h){var c=(h||'').replace(/<br\s*\/?>/gi,' ').replace(/<\/p>/gi,' ').replace(/<\/div>/gi,' ').replace(/<\/li>/gi,' ');var t=document.createElement('div');t.innerHTML=c;return(t.textContent||t.innerText||'').replace(/\s+/g,' ').trim();}
 function toMs(s){return new Date(s).getTime();}
-function makeSess(pts){var _sess=[[]],_ssi=0;pts.forEach(function(p,i){if(i>0&&(p.newSess||p.min-pts[i-1].min>120)){_sess.push([]);_ssi++;}_sess[_ssi].push(p);});if(_sess.length>1){var _off=0,_SP=8;_sess.forEach(function(s,di){var _s0=s[0].min;var sessLbl=s[0].newSess?'nach Abgabe':'T'+(di+1);s.forEach(function(p){p.min=p.min-_s0+_off;if(di>0)p.label=sessLbl+' '+p.label;});_off=s[s.length-1].min+_SP;});}return _sess;}
+function makeSess(pts){var _sess=[[]],_ssi=0;pts.forEach(function(p,i){if(i>0&&p.newSess&&p.min-pts[i-1].min>=20){_sess.push([]);_ssi++;}_sess[_ssi].push(p);});if(_sess.length>1){var _off=0,_SP=8;_sess.forEach(function(s,di){var _s0=s[0].min;var sessLbl=s[0].newSess?'nach Abgabe':'T'+(di+1);s.forEach(function(p){p.min=p.min-_s0+_off;if(di>0)p.label=sessLbl+' '+p.label;});_off=s[s.length-1].min+_SP;});}return _sess;}
 var appEl=document.querySelector('[data-v-app]')||document.querySelector('#app');
 var pinia=appEl&&appEl.__vue_app__&&appEl.__vue_app__.config.globalProperties.$pinia;
 var sbStore=pinia&&pinia._s.get('studentBackups');
@@ -999,6 +999,22 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         });
         r._brkSegs = segs;
       });
+
+      // Disable the break button if no student has a real break
+      var anyBreak = data.some(function(r) { return r._hasBreak; });
+      var _brkBtn = document.getElementById('viz-brk');
+      if (_brkBtn) {
+        _brkBtn.disabled = !anyBreak;
+        _brkBtn.style.opacity = anyBreak ? '1' : '0.4';
+        _brkBtn.style.cursor = anyBreak ? 'pointer' : 'not-allowed';
+        if (!anyBreak) {
+          breakMode = 'none';
+          var _modes = document.getElementById('viz-brk-modes');
+          if (_modes) _modes.style.display = 'none';
+          _brkBtn.style.background = '#f1f5f9';
+          _brkBtn.style.color = '#475569';
+        }
+      }
 
       // Step 2: compute commonSeg2Start for parallel mode
       if (breakMode === 'parallel') {
