@@ -215,6 +215,7 @@
       <button id="viz-back" data-i18n="viz-back" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px">&#8592; Zur&#252;ck</button>
       <button id="viz-csv" data-i18n="viz-csv" style="padding:8px 16px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">CSV exportieren</button>
       <button id="viz-save" data-i18n="viz-save" style="padding:8px 16px;background:#0f172a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">Als HTML speichern</button>
+      <button id="viz-md" data-i18n="viz-md" style="padding:8px 16px;background:#0f172a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">&#128196; MD herunterladen</button>
     </div>
   </div>
 </div>
@@ -878,6 +879,11 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       'viz-back': '\u2190 Zur\u00fcck',
       'viz-csv': 'CSV exportieren',
       'viz-save': 'Als HTML speichern',
+      'viz-md': '\uD83D\uDCC4 MD herunterladen',
+      'md-title': 'Klassenauswertung \u2014 Entwurfsstufen',
+      'md-words': 'W\u00f6rter',
+      'md-no-text': '_(kein Text gespeichert)_',
+      'md-filename': 'entwurfsstufen.md',
       'viz-title': 'Klassenauswertung \u2014 {n} Sch\u00fcler:innen',
       'tbl-chk-title': 'Alle an/ab',
       'tbl-name': 'Name',
@@ -907,6 +913,11 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       'viz-back': '\u2190 Back',
       'viz-csv': 'Export CSV',
       'viz-save': 'Save as HTML',
+      'viz-md': '\uD83D\uDCC4 Download MD',
+      'md-title': 'Class Overview \u2014 Draft Stages',
+      'md-words': 'words',
+      'md-no-text': '_(no text saved)_',
+      'md-filename': 'draft_stages.md',
       'viz-title': 'Class overview \u2014 {n} students',
       'tbl-chk-title': 'Show/hide all',
       'tbl-name': 'Name',
@@ -1376,6 +1387,26 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       var a = document.createElement('a');
       a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(saved);
       a.download = T[lang]['html-filename'];
+      a.click();
+    };
+
+    // MD export
+    document.getElementById('viz-md').onclick = function() {
+      var lang = LANG;
+      var lines = ['# ' + T[lang]['md-title'], ''];
+      data.forEach(function(r) {
+        lines.push('## ' + r.name, '');
+        r.points.forEach(function(p) {
+          lines.push('### ' + p.label + ' \u2014 ' + p.min + ' Min. \u2014 ' + p.words + ' ' + T[lang]['md-words']);
+          lines.push('');
+          lines.push(p.text || T[lang]['md-no-text']);
+          lines.push('');
+        });
+        lines.push('---', '');
+      });
+      var a = document.createElement('a');
+      a.href = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(lines.join('\n'));
+      a.download = T[lang]['md-filename'];
       a.click();
     };
   }
