@@ -194,6 +194,12 @@
   <div class="note" data-i18n-html="note-privacy">&#x1F512; Nichts wird an externe Server gesendet.</div>
 </div>
 
+<!-- Student feedback link -->
+<div style="max-width:540px;width:100%;text-align:center;font-size:12px;color:#64748b">
+  <a href="https://feedback.schreibtraining.help/schreibverlauf.html" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:500">&#x1F4C8; F&#252;r Sch&#252;ler: eigenen Textverlauf ansehen</a>
+  <div style="margin-top:6px;color:#94a3b8;font-size:11px">Letztes Update: 31.05.2026</div>
+</div>
+
 <!-- Visualization section (shown when URL has hash data) -->
 <div id="viz-section">
   <div class="card">
@@ -334,8 +340,8 @@ var dotsOn=false;dotsBtn.style.background='#e2e8f0';dotsBtn.style.color='#1e293b
 dotsBtn.onclick=function(){dotsOn=!dotsOn;var g=chartDiv.querySelector('#_enDots');if(g)g.setAttribute('display',dotsOn?'':'none');this.style.background=dotsOn?'#f1f5f9':'#e2e8f0';this.style.color=dotsOn?'#475569':'#1e293b';};
 fsBtn.onclick=function(){var svg=chartDiv.querySelector('svg');if(!svg)return;var fsOv=document.createElement('div');fsOv.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:20px';var fsBox=document.createElement('div');fsBox.style.cssText='background:#fff;border-radius:16px;padding:20px;width:min(96vw,1300px);position:relative';var fsCls=document.createElement('button');fsCls.textContent='\u00d7';fsCls.style.cssText='position:absolute;top:10px;right:12px;background:none;border:none;font-size:22px;cursor:pointer;color:#64748b';fsCls.onclick=function(){fsOv.remove();};var svgClone=svg.cloneNode(true);svgClone.style.cssText='display:block;width:100%;height:auto;border-radius:8px';fsBox.appendChild(fsCls);fsBox.appendChild(svgClone);fsOv.appendChild(fsBox);fsOv.addEventListener('click',function(e){if(e.target===fsOv)fsOv.remove();});document.body.appendChild(fsOv);};
 var tbl=document.createElement('table');tbl.style.cssText='width:100%;border-collapse:collapse;font-size:11px';
-var th='<thead><tr style="background:#f1f5f9">';['Zeit','Min. seit Start','W\u00f6rter','+/\u2212 W\u00f6rter'].forEach(function(h,i){th+='<th style="padding:7px 10px;text-align:left;color:#475569;font-weight:600'+(i===0?';border-radius:8px 0 0 8px':i===3?';border-radius:0 8px 8px 0':'')+'">' +h+'</th>';});th+='</tr></thead>';
-var tb='<tbody>';pts.forEach(function(p,i){var diff,col,detail='';if(i===0){diff='\u2013';col='#94a3b8';}else{var net=p.words-pts[i-1].words;diff=(net>=0?'+':'')+net;col=net>=0?'#16a34a':'#dc2626';if(p.wAdded||p.wDeleted){detail=' <span style="font-size:10px;opacity:0.7">(+'+p.wAdded+'/-'+p.wDeleted+')</span>';}}tb+='<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px 10px;color:#1e293b">'+p.label+'</td><td style="padding:7px 10px;color:#64748b">'+p.min+' Min.</td><td style="padding:7px 10px;font-weight:600;color:#0f172a">'+p.words+'</td><td style="padding:7px 10px;color:'+col+'">'+diff+detail+'</td></tr>';});tb+='</tbody>';
+var th='<thead><tr style="background:#f1f5f9">';['Zeit','Min. seit Start','W\u00f6rter','+/\u2212 W\u00f6rter','Satzzeichen'].forEach(function(h,i){th+='<th style="padding:7px 10px;text-align:left;color:#475569;font-weight:600'+(i===0?';border-radius:8px 0 0 8px':i===4?';border-radius:0 8px 8px 0':'')+'">' +h+'</th>';});th+='</tr></thead>';
+var tb='<tbody>';pts.forEach(function(p,i){var diff,col,detail='',nc=0;if(i===0){diff='\u2013';col='#94a3b8';}else{var net=p.words-pts[i-1].words;diff=(net>=0?'+':'')+net;col=net>=0?'#16a34a':'#dc2626';nc=Math.max(0,(p.changeAmount||0)-((p.wAdded||0)+(p.wDeleted||0)));if(p.wAdded||p.wDeleted){detail=' <span style="font-size:10px">(<span style="color:#16a34a">+'+p.wAdded+'</span>/<span style="color:#dc2626">-'+p.wDeleted+'</span>)</span>';}}tb+='<tr style="border-top:1px solid #f1f5f9"><td style="padding:7px 10px;color:#1e293b">'+p.label+'</td><td style="padding:7px 10px;color:#64748b">'+p.min+' Min.</td><td style="padding:7px 10px;font-weight:600;color:#0f172a">'+p.words+'</td><td style="padding:7px 10px;color:'+col+'">'+diff+detail+'</td><td style="padding:7px 10px;'+(nc>0?'color:#7b5ea7':'color:#94a3b8')+'">'+(i===0?'\u2013':(nc>0?nc:'\u2014'))+'</td></tr>';});tb+='</tbody>';
 tbl.innerHTML=th+tb;
 var foot=document.createElement('div');foot.style.cssText='margin-top:8px;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0';
 var mdBtn=document.createElement('button');mdBtn.textContent='Entwurfsstufen als MD exportieren';mdBtn.style.cssText='padding:9px 16px;background:#fff;color:#2563eb;border:1.5px solid #2563eb;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500';
@@ -398,10 +404,10 @@ htmlBtn.onclick=function(){
     var tbl=document.createElement('table');
     tbl.style.cssText='width:100%;border-collapse:collapse;font-size:11px';
     var thHtml='<thead><tr style="background:#f1f5f9">';
-    ['Zeit','Min. seit Start','W\u00f6rter','+\/\u2212 W\u00f6rter'].forEach(function(h,i){thHtml+='<th style="padding:5px 8px;text-align:left;color:#475569;font-weight:600'+(i===0?';border-radius:8px 0 0 8px':i===3?';border-radius:0 8px 8px 0':'')+'">' +h+'<\/th>';});
+    ['Zeit','Min. seit Start','W\u00f6rter','+\/\u2212 W\u00f6rter','Satzzeichen'].forEach(function(h,i){thHtml+='<th style="padding:5px 8px;text-align:left;color:#475569;font-weight:600'+(i===0?';border-radius:8px 0 0 8px':i===4?';border-radius:0 8px 8px 0':'')+'">' +h+'<\/th>';});
     thHtml+='<\/tr><\/thead>';
     var tbHtml='<tbody>';
-    pts.forEach(function(p,i){var diff,col,detail='';if(i===0){diff='\u2013';col='#94a3b8';}else{var net=p.words-pts[i-1].words;diff=(net>=0?'+':'')+net;col=net>=0?'#16a34a':'#dc2626';if(p.wAdded||p.wDeleted){detail=' <span style="font-size:10px;opacity:0.7">(+'+p.wAdded+'/-'+p.wDeleted+')<\/span>';}}tbHtml+='<tr style="border-top:1px solid #f1f5f9"><td style="padding:5px 8px;color:#1e293b">'+p.label+'<\/td><td style="padding:5px 8px;color:#64748b">'+p.min+' Min.<\/td><td style="padding:5px 8px;font-weight:600;color:#0f172a">'+p.words+'<\/td><td style="padding:5px 8px;color:'+col+'">'+diff+detail+'<\/td><\/tr>';});
+    pts.forEach(function(p,i){var diff,col,detail='',nc=0;if(i===0){diff='\u2013';col='#94a3b8';}else{var net=p.words-pts[i-1].words;diff=(net>=0?'+':'')+net;col=net>=0?'#16a34a':'#dc2626';nc=Math.max(0,(p.changeAmount||0)-((p.wAdded||0)+(p.wDeleted||0)));if(p.wAdded||p.wDeleted){detail=' <span style="font-size:10px">(<span style="color:#16a34a">+'+p.wAdded+'<\/span>\/<span style="color:#dc2626">-'+p.wDeleted+'<\/span>)<\/span>';}}tbHtml+='<tr style="border-top:1px solid #f1f5f9"><td style="padding:5px 8px;color:#1e293b">'+p.label+'<\/td><td style="padding:5px 8px;color:#64748b">'+p.min+' Min.<\/td><td style="padding:5px 8px;font-weight:600;color:#0f172a">'+p.words+'<\/td><td style="padding:5px 8px;color:'+col+'">'+diff+detail+'<\/td><td style="padding:5px 8px;'+(nc>0?'color:#7b5ea7':'color:#94a3b8')+'">'+(i===0?'\u2013':(nc>0?nc:'\u2014'))+'<\/td><\/tr>';});
     tbHtml+='<\/tbody>';
     tbl.innerHTML=thHtml+tbHtml;
     var tblWrap=document.createElement('div');
