@@ -526,6 +526,7 @@ ov.appendChild(md);ov.addEventListener('click',function(e){if(e.target===ov)ov.r
 <!-- Class flow: A (check existing) → B (select students) → C (collect) → D (visualize) — DE -->
 <script id="src-class-flow" type="text/plain">
 (function(){
+function exTxt(h){return(h||'').replace(/<\/p>\s*<p[^>]*>/gi,'\n\n').replace(/<br\s*\/?>/gi,'\n\n').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/&#(\d+);/g,function(_,n){return String.fromCharCode(n);}).replace(/\n{3,}/g,'\n\n').split('\n').map(function(l){return l.trim();}).join('\n').trim();}
 var appEl=document.querySelector('#app');
 var pinia=appEl&&appEl.__vue_app__&&appEl.__vue_app__.config.globalProperties.$pinia;
 if(!pinia){alert('Bitte die Klassen-Ergebnisseite auf exam.net \u00f6ffnen.');return;}
@@ -678,6 +679,7 @@ next();
 <!-- Class flow: A → B → C → D — EN -->
 <script id="src-class-flow-en" type="text/plain">
 (function(){
+function exTxt(h){return(h||'').replace(/<\/p>\s*<p[^>]*>/gi,'\n\n').replace(/<br\s*\/?>/gi,'\n\n').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/&#(\d+);/g,function(_,n){return String.fromCharCode(n);}).replace(/\n{3,}/g,'\n\n').split('\n').map(function(l){return l.trim();}).join('\n').trim();}
 var appEl=document.querySelector('#app');
 var pinia=appEl&&appEl.__vue_app__&&appEl.__vue_app__.config.globalProperties.$pinia;
 if(!pinia){alert('Please open the class results page on exam.net.');return;}
