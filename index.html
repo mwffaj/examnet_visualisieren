@@ -128,7 +128,7 @@
     }
     .viz-row {
       display: grid;
-      grid-template-columns: 20px 1fr 52px 48px 42px;
+      grid-template-columns: 20px 1fr 52px 48px 42px 18px;
       padding: 5px 8px;
       align-items: center;
       font-size: 13px;
@@ -988,6 +988,8 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     var sx, sy;
     var breakMode = 'none'; // 'none' | 'parallel' | 'individual'
     var tableEl; // declared early so computeAndDraw can update cells on re-calls
+    data = data.slice();
+    var excludedStudents = [];
 
     function computeAndDraw() {
       var commonSeg2Start = null;
@@ -1130,27 +1132,66 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
           }
         });
       }
+      var _excCircles = document.getElementById('viz-chart').querySelectorAll('circle');
+      for (var _ec = 0; _ec < _excCircles.length; _ec++) _excCircles[_ec].setAttribute('display', dotsOn ? '' : 'none');
     }
 
     computeAndDraw();
 
     var L = T[LANG];
     function shdr(lbl, col) { return '<span data-sort="' + col + '" style="cursor:pointer;user-select:none">' + lbl + '<span class="sa" data-col="' + col + '"></span></span>'; }
-    var html = '<div class="viz-row header"><span><input type="checkbox" id="viz-chk-all" checked title="' + L['tbl-chk-title'] + '" style="cursor:pointer;margin:0"></span><span>' + L['tbl-name'] + '</span>' + shdr(L['tbl-words'], 'words') + shdr(L['tbl-min'], 'min') + shdr(L['tbl-avg'], 'avg') + '</div>';
-    data.forEach(function(r, i) {
-      var c = C(i);
-      var last = r.points[r.points.length - 1];
-      var avgVal = last._dm > 0 ? last.words / last._dm : -1;
-      var avgStr = last._dm > 0 ? avgVal.toFixed(1) : '\u2013';
-      html += '<div class="viz-row" data-idx="' + i + '" data-words="' + last.words + '" data-min="' + last._dm + '" data-avg="' + avgVal + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
-        '<span><input type="checkbox" class="viz-chk" data-idx="' + i + '" checked style="cursor:pointer;margin:0"></span>' +
-        '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
-        '<span style="font-weight:600">' + last.words + '</span>' +
-        '<span class="cell-dm" style="color:#94a3b8">' + last._dm + '</span>' +
-        '<span class="cell-avg" style="color:#94a3b8">' + avgStr + '</span>' +
-        '</div>';
-    });
-    document.getElementById('viz-table').innerHTML = html;
+
+    function rebuildTable() {
+      var html = '<div class="viz-row header"><span><input type="checkbox" id="viz-chk-all" checked title="' + L['tbl-chk-title'] + '" style="cursor:pointer;margin:0"></span><span>' + L['tbl-name'] + '</span>' + shdr(L['tbl-words'], 'words') + shdr(L['tbl-min'], 'min') + shdr(L['tbl-avg'], 'avg') + '<span></span></div>';
+      data.forEach(function(r, i) {
+        var c = C(i);
+        var last = r.points[r.points.length - 1];
+        var avgVal = last._dm > 0 ? last.words / last._dm : -1;
+        var avgStr = last._dm > 0 ? avgVal.toFixed(1) : '\u2013';
+        html += '<div class="viz-row" data-idx="' + i + '" data-words="' + last.words + '" data-min="' + last._dm + '" data-avg="' + avgVal + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
+          '<span><input type="checkbox" class="viz-chk" data-idx="' + i + '" checked style="cursor:pointer;margin:0"></span>' +
+          '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
+          '<span style="font-weight:600">' + last.words + '</span>' +
+          '<span class="cell-dm" style="color:#94a3b8">' + last._dm + '</span>' +
+          '<span class="cell-avg" style="color:#94a3b8">' + avgStr + '</span>' +
+          '<span><button class="viz-excl" data-idx="' + i + '" title="Aus Diagramm entfernen (Achse wird neu berechnet)" style="background:none;border:none;cursor:pointer;color:#cbd5e1;font-size:15px;line-height:1;padding:0;display:block">\u00d7</button></span>' +
+          '</div>';
+      });
+      tableEl = document.getElementById('viz-table');
+      tableEl.innerHTML = html;
+      document.getElementById('viz-title').textContent = T[LANG]['viz-title'].replace('{n}', data.length);
+      updateExcludedBand();
+    }
+
+    function updateExcludedBand() {
+      var old = document.getElementById('viz-excl-band');
+      if (old) old.remove();
+      if (!excludedStudents.length) return;
+      var band = document.createElement('div');
+      band.id = 'viz-excl-band';
+      band.style.cssText = 'margin-top:6px;padding:6px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center';
+      var lbl = document.createElement('span');
+      lbl.style.cssText = 'font-size:11px;color:#9a3412;font-weight:600;flex-shrink:0';
+      lbl.textContent = 'Entfernt:';
+      band.appendChild(lbl);
+      excludedStudents.forEach(function(s) {
+        var chip = document.createElement('button');
+        chip.textContent = s.name + '\u00a0+';
+        chip.style.cssText = 'padding:2px 8px;background:#fed7aa;color:#9a3412;border:1px solid #fdba74;border-radius:12px;cursor:pointer;font-size:11px';
+        chip.title = 'Wieder einblenden';
+        chip.onclick = function() {
+          excludedStudents.splice(excludedStudents.indexOf(s), 1);
+          data.push(s);
+          selected = -1;
+          rebuildTable();
+          computeAndDraw();
+        };
+        band.appendChild(chip);
+      });
+      document.getElementById('viz-table').after(band);
+    }
+
+    rebuildTable();
 
     var chartEl = document.getElementById('viz-chart');
     tableEl = document.getElementById('viz-table');
@@ -1250,6 +1291,15 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     });
     tableEl.addEventListener('click', function(e) {
       if (e.target.type === 'checkbox') return;
+      if (e.target.classList.contains('viz-excl')) {
+        e.stopPropagation();
+        var exIdx = parseInt(e.target.getAttribute('data-idx'), 10);
+        excludedStudents.push(data.splice(exIdx, 1)[0]);
+        selected = -1;
+        rebuildTable();
+        computeAndDraw();
+        return;
+      }
       // Sort header columns
       var el = e.target;
       while (el && el !== tableEl) {
