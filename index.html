@@ -197,7 +197,7 @@
 <!-- Student feedback link -->
 <div style="max-width:540px;width:100%;text-align:center;font-size:12px;color:#64748b">
   <a href="https://feedback.schreibtraining.help/schreibverlauf.html" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:500">&#x1F4C8; F&#252;r Sch&#252;ler: eigenen Textverlauf ansehen</a>
-  <div style="margin-top:6px;color:#94a3b8;font-size:11px">Letztes Update: 20.06.2026</div>
+  <div style="margin-top:6px;color:#94a3b8;font-size:11px">Letztes Update: 21.06.2026</div>
 </div>
 
 <!-- Visualization section (shown when URL has hash data) -->
@@ -236,7 +236,7 @@ function toMs(s){return new Date(s).getTime();}
 function makeSess(pts,leaveMs,ms0){var lastPre=null,firstPost=null;if(leaveMs&&ms0){var lm=Math.round((leaveMs-ms0)/60000);if(lm>=10){var afterPts=pts.filter(function(p){return p.min>lm;});if(afterPts.length>=2){pts.forEach(function(p){if(p.min<=lm)lastPre=p;else if(!firstPost)firstPost=p;});if(!lastPre||!firstPost||firstPost.min-lastPre.min<20){lastPre=null;firstPost=null;}}}}if(!firstPost){var maxGap=0,maxI=-1;for(var gi=1;gi<pts.length;gi++){var g=pts[gi].min-pts[gi-1].min;if(g>maxGap){maxGap=g;maxI=gi;}}if(maxGap>=60&&maxI>0&&pts.length-maxI>=2){lastPre=pts[maxI-1];firstPost=pts[maxI];}}if(!firstPost)return[pts];var _sess=[[]],_ssi=0;pts.forEach(function(p){if(p===firstPost){_sess.push([]);_ssi++;}_sess[_ssi].push(p);});var _off=0,_SP=8;_sess.forEach(function(s,di){var _s0=s[0].min;s.forEach(function(p){p.min=p.min-_s0+_off;if(di>0)p.label='nach Abgabe '+p.label;});_off=s[s.length-1].min+_SP;});return _sess;}
 var appEl=document.querySelector('[data-v-app]')||document.querySelector('#app');
 var pinia=appEl&&appEl.__vue_app__&&appEl.__vue_app__.config.globalProperties.$pinia;
-function tryBuild(retriesLeft){
+function tryBuild(retriesLeft,btnClicked){
 var sbStore=pinia&&pinia._s.get('studentBackups');
 var bk=sbStore&&sbStore.backups;
 if((!bk||!bk.length)&&pinia){bk=pinia.state.value&&pinia.state.value.studentBackups&&pinia.state.value.studentBackups.backups;}
@@ -250,8 +250,9 @@ var _md=sorted.some(function(b,i){if(!i)return false;var d0=new Date(ms0),di=new
 var pts=sorted.map(function(b,i){var tsMs=toMs(b.createdAt);var d=new Date(tsMs);var hhmm=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);var label=_md?(d.getDate()+'.'+(d.getMonth()+1)+'. '+hhmm):hhmm;var min=Math.round((tsMs-ms0)/60000);var txt=exTxt(b.studentAnswer);var words=txt.split(/\s+/).filter(function(w){return w.length>0;}).length;var prevMs=i>0?toMs(sorted[i-1].createdAt):null;var newSess=!!(leaveMs&&tsMs>leaveMs&&(i===0||prevMs<=leaveMs));return{label:label,min:min,words:words,text:txt,newSess:newSess};});
 buildModal(pts,makeSess(pts,leaveMs,ms0));
 }else if(pinia&&retriesLeft>0){
+if(!btnClicked){var btn=null;[].slice.call(document.querySelectorAll('button,[role="button"]')).forEach(function(el){if(/Antwortverlauf|Response.history/i.test(el.textContent))btn=el;});if(btn)btn.click();}
 if(!window._enLoadingToast){var t=document.createElement('div');t.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-family:system-ui,sans-serif;font-size:13px;padding:8px 18px;border-radius:20px;z-index:2147483647;box-shadow:0 4px 12px rgba(0,0,.3)';t.textContent='Verlaufsdaten werden geladen\u2026';document.body.appendChild(t);window._enLoadingToast=t;}
-setTimeout(function(){tryBuild(retriesLeft-1);},1500);
+setTimeout(function(){tryBuild(retriesLeft-1,true);},2000);
 }else{
 if(window._enLoadingToast){window._enLoadingToast.remove();window._enLoadingToast=null;}
 domFallback(0);
