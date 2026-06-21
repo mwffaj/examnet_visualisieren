@@ -197,7 +197,7 @@
 <!-- Student feedback link -->
 <div style="max-width:540px;width:100%;text-align:center;font-size:12px;color:#64748b">
   <a href="https://feedback.schreibtraining.help/schreibverlauf.html" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:500">&#x1F4C8; F&#252;r Sch&#252;ler: eigenen Textverlauf ansehen</a>
-  <div style="margin-top:6px;color:#94a3b8;font-size:11px">Letztes Update: 21.06.2026</div>
+  <div style="margin-top:6px;color:#94a3b8;font-size:11px">Letztes Update: 22.06.2026</div>
 </div>
 
 <!-- Visualization section (shown when URL has hash data) -->
@@ -212,6 +212,7 @@
           <button id="viz-brk-par" data-i18n="viz-brk-par" style="padding:5px 10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px">Parallel</button>
           <button id="viz-brk-ind" data-i18n="viz-brk-ind" style="padding:5px 10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px">Individuell</button>
         </span>
+        <button id="viz-anon" data-i18n="viz-anon" style="padding:5px 10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px">Anonym</button>
         <button id="viz-fs" data-i18n="viz-fs" style="padding:5px 10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:12px">&#9974; Vollbild</button>
       </div>
     </div>
@@ -900,6 +901,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       'viz-brk': '\u21a9 Zwischenabgaben',
       'viz-brk-par': 'Parallel',
       'viz-brk-ind': 'Individuell',
+      'viz-anon': 'Anonym',
       'viz-fs': '\u26f6 Vollbild',
       'viz-back': '\u2190 Zur\u00fcck',
       'viz-csv': 'CSV exportieren',
@@ -929,6 +931,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
       'viz-brk': '\u21a9 Interim submissions',
       'viz-brk-par': 'Aligned',
       'viz-brk-ind': 'Individual',
+      'viz-anon': 'Anon',
       'viz-fs': '\u26f6 Full screen',
       'viz-back': '\u2190 Back',
       'viz-csv': 'Export CSV',
@@ -998,6 +1001,18 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     var tableEl; // declared early so computeAndDraw can update cells on re-calls
     data = data.slice();
     var excludedStudents = [];
+    var anonOn = false;
+    var anonMap = null;
+    var _ADJ = ['roter','blauer','grüner','gelber','grauer','schwarzer','weisser','brauner','goldener','silberner'];
+    var _TIER = ['Hase','Fuchs','Bär','Igel','Luchs'];
+    function buildAnonMap() {
+      var combos = [];
+      _ADJ.forEach(function(a) { _TIER.forEach(function(t) { combos.push(a + ' ' + t); }); });
+      for (var _i = combos.length - 1; _i > 0; _i--) { var _j = Math.floor(Math.random() * (_i + 1)); var _tmp = combos[_i]; combos[_i] = combos[_j]; combos[_j] = _tmp; }
+      anonMap = {};
+      data.forEach(function(r, i) { anonMap[r.name] = combos[i % combos.length]; });
+    }
+    function displayName(r) { return anonOn && anonMap ? anonMap[r.name] : r.name; }
 
     function computeAndDraw() {
       var commonSeg2Start = null;
@@ -1115,7 +1130,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
           var bpx = sx(bp), bpy = sy(bp);
           sv += '<circle cx="' + bpx + '" cy="' + bpy + '" r="5" fill="none" stroke="' + c + '" stroke-width="1.5" stroke-dasharray="3,2"/>';
         }
-        sv += '<text id="svg-label-' + i + '" x="' + tx + '" y="' + (ly - 9) + '" text-anchor="' + anchor + '" font-size="11" font-weight="600" fill="' + c + '" stroke="white" stroke-width="3" paint-order="stroke" display="none">' + r.name + '</text></g>';
+        sv += '<text id="svg-label-' + i + '" x="' + tx + '" y="' + (ly - 9) + '" text-anchor="' + anchor + '" font-size="11" font-weight="600" fill="' + c + '" stroke="white" stroke-width="3" paint-order="stroke" display="none">' + displayName(r) + '</text></g>';
       });
       sv += '<line x1="' + pl + '" y1="' + pt + '" x2="' + pl + '" y2="' + (pt + ch) + '" stroke="#cbd5e1" stroke-width="1.5"/><line x1="' + pl + '" y1="' + (pt + ch) + '" x2="' + (pl + cw) + '" y2="' + (pt + ch) + '" stroke="#cbd5e1" stroke-width="1.5"/></svg>';
       document.getElementById('viz-chart').innerHTML = sv;
@@ -1158,7 +1173,7 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
         var avgStr = last._dm > 0 ? avgVal.toFixed(1) : '\u2013';
         html += '<div class="viz-row" data-idx="' + i + '" data-words="' + last.words + '" data-min="' + last._dm + '" data-avg="' + avgVal + '" style="cursor:pointer;border-radius:4px;transition:background .15s">' +
           '<span><input type="checkbox" class="viz-chk" data-idx="' + i + '" checked style="cursor:pointer;margin:0"></span>' +
-          '<span><span class="dot" style="background:' + c + '"></span>' + r.name + '</span>' +
+          '<span><span class="dot" style="background:' + c + '"></span>' + displayName(r) + '</span>' +
           '<span style="font-weight:600">' + last.words + '</span>' +
           '<span class="cell-dm" style="color:#94a3b8">' + last._dm + '</span>' +
           '<span class="cell-avg" style="color:#94a3b8">' + avgStr + '</span>' +
@@ -1377,6 +1392,16 @@ setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove
     };
     brkPar.onclick = function() { setBrkMode('parallel'); };
     brkInd.onclick = function() { setBrkMode('individual'); };
+
+    // Anonymisation toggle
+    document.getElementById('viz-anon').onclick = function() {
+      if (!anonMap) buildAnonMap();
+      anonOn = !anonOn;
+      this.style.background = anonOn ? '#e2e8f0' : '#f1f5f9';
+      this.style.color = anonOn ? '#1e293b' : '#475569';
+      rebuildTable();
+      computeAndDraw();
+    };
 
     // Fullscreen modal
     document.getElementById('viz-fs').onclick = function() {
