@@ -614,7 +614,33 @@ checks.push({chk:chk,s:s,nameInp:nameInp});
 masterChk.onchange=function(){checks.forEach(function(c){c.chk.checked=masterChk.checked;});};
 checks.forEach(function(c){c.chk.onchange=function(){masterChk.checked=checks.every(function(x){return x.chk.checked;});};});
 b.box.appendChild(list);
-var rowB=mkEl('div','display:flex;gap:8px;justify-content:flex-end');
+var _BADJ=['roter','blauer','gr\u00fcner','gelber','grauer','schwarzer','wei\u00dfer','brauner','goldener','silberner'];
+var _BTIER=['Hase','Fuchs','B\u00e4r','Igel','Luchs'];
+function _genP(n){var c=[];_BADJ.forEach(function(a){_BTIER.forEach(function(t){c.push(a+' '+t);});});for(var i=c.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=c[i];c[i]=c[j];c[j]=tmp;}return c.slice(0,n);}
+var _anonOn=false,_anonMap=null;
+var rowAnon=mkEl('div','display:flex;gap:6px;align-items:center');
+var btnAnon=mkBtn('\u2588 Anonym','#f1f5f9','#475569','1px solid #e2e8f0');
+var btnKey=mkBtn('Schl\u00fcssel \u2193','#f1f5f9','#2563eb','1px solid #bfdbfe');
+btnKey.style.display='none';
+btnAnon.onclick=function(){
+if(!_anonOn){
+checks.forEach(function(c){if(c.origName===undefined)c.origName=c.nameInp.value;});
+var ps=_genP(checks.length);
+_anonMap=[];
+checks.forEach(function(c,i){c.nameInp.value=ps[i];_anonMap.push({real:c.origName,pseudo:ps[i]});});
+_anonOn=true;btnAnon.style.background='#e2e8f0';btnAnon.style.color='#1e293b';btnKey.style.display='';
+}else{
+checks.forEach(function(c){c.nameInp.value=c.origName;});
+_anonOn=false;_anonMap=null;btnAnon.style.background='#f1f5f9';btnAnon.style.color='#475569';btnKey.style.display='none';
+}};
+btnKey.onclick=function(){
+if(!_anonMap)return;
+var csv='Pseudonym;Klarname\n'+_anonMap.map(function(x){return x.pseudo+';'+x.real;}).join('\n');
+var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='schl\u00fcssel.csv';a.click();
+};
+rowAnon.append(btnAnon,btnKey);
+var rowB=mkEl('div','display:flex;gap:8px;justify-content:space-between;align-items:center');
+var rowBRight=mkEl('div','display:flex;gap:8px');
 var btnGo=mkBtn('\u26a1 Sammeln','#2563eb');
 var btnCancelB=mkBtn('Abbrechen','#f1f5f9','#64748b','1px solid #e2e8f0');
 btnCancelB.onclick=function(){b.ov.remove();};
@@ -623,7 +649,8 @@ var sel=checks.filter(function(c){return c.chk.checked;}).map(function(c){return
 if(!sel.length){alert('Mindestens eine Person ausw\u00e4hlen.');return;}
 b.ov.remove();levelC(sel);
 };
-rowB.append(btnGo,btnCancelB);
+rowBRight.append(btnGo,btnCancelB);
+rowB.append(rowAnon,rowBRight);
 b.box.appendChild(rowB);
 }
 function levelC(sel){
